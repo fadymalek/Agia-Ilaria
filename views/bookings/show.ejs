@@ -1,0 +1,198 @@
+<%- include('../partials/head', { title: 'تفاصيل الحجز' }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container py-4" style="max-width: 800px;">
+  <%- include('../partials/flash') %>
+
+  <!-- Actions Bar -->
+  <div class="d-flex align-items-center gap-2 mb-4 no-print">
+    <a href="/bookings" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right me-1"></i>رجوع</a>
+    <a href="/bookings/<%= booking.id %>/edit" class="btn btn-outline-gold btn-sm"><i class="bi bi-pencil me-1"></i>تعديل</a>
+    <button onclick="window.print()" class="btn btn-outline-secondary btn-sm ms-auto">
+      <i class="bi bi-printer me-1"></i>طباعة الإيصال
+    </button>
+    <form action="/bookings/<%= booking.id %>?_method=DELETE" method="POST" onsubmit="return confirm('هل تريد حذف هذا الحجز؟')">
+      <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>حذف</button>
+    </form>
+  </div>
+
+  <!-- Printable Receipt -->
+  <div class="card border shadow-sm receipt-card" id="receipt">
+    <div class="card-body p-4">
+      <!-- Header -->
+      <div class="text-center mb-4 pb-3 border-bottom">
+        <img src="/images/logo.png" height="70" alt="Logo" class="mb-2" onerror="this.style.display='none'">
+        <div class="small text-muted">بطريركية الأقباط الأرثوذكس - قطاع غرب الاسكندرية</div>
+        <h5 class="fw-bold mt-1" style="color: var(--gold-dark);">بيت القديسة ايلاريا للخلوات الروحية للبنات - بأبو تلات</h5>
+        <div class="mt-2">
+          <% if (booking.booking_type === 'retreat') { %>
+            <span class="badge fs-6 bg-primary">استمارة تسجيل بيانات خلوة</span>
+          <% } else { %>
+            <span class="badge fs-6 bg-success">استمارة تسجيل بيانات يوم روحي</span>
+          <% } %>
+          <span class="badge bg-secondary ms-2"><%= booking.booking_number %></span>
+        </div>
+      </div>
+
+      <!-- Fields Grid -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <div class="receipt-field">
+            <span class="field-label">اسم القطاع :</span>
+            <span class="field-value"><%= booking.sector_name || '................................' %></span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="receipt-field">
+            <span class="field-label">اسم الكنيسة :</span>
+            <span class="field-value fw-bold"><%= booking.church_name %></span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="receipt-field">
+            <span class="field-label">الكاهن المسؤل :</span>
+            <span class="field-value"><%= booking.priest_name || '................................' %></span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="receipt-field">
+            <span class="field-label">تليفون :</span>
+            <span class="field-value" dir="ltr"><%= booking.priest_phone || '................................' %></span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="receipt-field">
+            <span class="field-label"><%= booking.booking_type === 'retreat' ? 'اسم مشرفة الخلوة :' : 'اسم المشرف :' %></span>
+            <span class="field-value"><%= booking.supervisor_name || '................................' %></span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="receipt-field">
+            <span class="field-label">تليفون :</span>
+            <span class="field-value" dir="ltr"><%= booking.supervisor_phone || '................................' %></span>
+          </div>
+        </div>
+
+        <% if (booking.booking_type === 'retreat') { %>
+          <div class="col-md-6">
+            <div class="receipt-field">
+              <span class="field-label">المرحلة العمرية / السن :</span>
+              <span class="field-value"><%= booking.age_group || '................................' %></span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="receipt-field">
+              <span class="field-label">عدد أفراد الخلوة :</span>
+              <span class="field-value fw-bold"><%= booking.num_people || '........' %></span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="receipt-field">
+              <span class="field-label">عدد أيام الخلوة :</span>
+              <span class="field-value"><%= booking.num_days || '........' %></span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="receipt-field">
+              <span class="field-label">من :</span>
+              <span class="field-value"><%= booking.start_date || '..................' %></span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="receipt-field">
+              <span class="field-label">إلى :</span>
+              <span class="field-value"><%= booking.end_date || '..................' %></span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="receipt-field">
+              <span class="field-label">الدور المحجوز :</span>
+              <span class="field-value fw-bold text-primary"><%= booking.floor_number || '................................' %></span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="receipt-field">
+              <span class="field-label">الفئة :</span>
+              <span class="field-value"><%= booking.category || '................................' %></span>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="col-md-6">
+            <div class="receipt-field">
+              <span class="field-label">نوع الخدمة :</span>
+              <span class="field-value"><%= booking.service_type || '................................' %></span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="receipt-field">
+              <span class="field-label">عدد الأفراد :</span>
+              <span class="field-value fw-bold"><%= booking.num_people || '........' %></span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="receipt-field">
+              <span class="field-label">التاريخ :</span>
+              <span class="field-value"><%= booking.event_date || '..................' %></span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="receipt-field">
+              <span class="field-label">من الساعة :</span>
+              <span class="field-value"><%= booking.start_time || '........' %></span>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="receipt-field">
+              <span class="field-label">إلى الساعة :</span>
+              <span class="field-value"><%= booking.end_time || '........' %></span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="receipt-field">
+              <span class="field-label">الفئة :</span>
+              <span class="field-value"><%= booking.category || '................................' %></span>
+            </div>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Financial -->
+      <div class="row g-3 mt-1 p-3 rounded" style="background: #fffbf0; border: 1px solid #e8d5a3;">
+        <div class="col-md-4 text-center">
+          <div class="small text-muted">إجمالي المبلغ</div>
+          <div class="fw-bold fs-5"><%= (booking.total_amount || 0).toLocaleString() %> <small>ج.م</small></div>
+        </div>
+        <div class="col-md-4 text-center border-start border-end">
+          <div class="small text-muted">المبلغ المدفوع</div>
+          <div class="fw-bold fs-5 text-success"><%= (booking.paid_amount || 0).toLocaleString() %> <small>ج.م</small></div>
+        </div>
+        <div class="col-md-4 text-center">
+          <div class="small text-muted">المبلغ المتبقي</div>
+          <div class="fw-bold fs-5 <%= (booking.remaining_amount || 0) > 0 ? 'text-danger' : 'text-muted' %>">
+            <%= (booking.remaining_amount || 0).toLocaleString() %> <small>ج.م</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Declaration -->
+      <div class="mt-4 pt-3 border-top">
+        <h6 class="fw-bold mb-2">إقرار</h6>
+        <p class="small text-muted mb-3">
+          أقر أنا <strong><%= booking.signature_name || '.........................' %></strong> الموقع أدناه بأنني اطلعت على تعليمات البيت ومسؤل عن سلامته ونظافته والحفاظ على هدوئه
+          <% if (booking.booking_type === 'retreat') { %> طول أيام الخلوة.<% } else { %>.<% } %>
+        </p>
+        <div class="d-flex justify-content-between align-items-end">
+          <div class="text-muted small">التوقيع : ..........................</div>
+          <div class="text-muted small">التاريخ : <%= booking.created_at ? booking.created_at.split('T')[0] : '' %></div>
+          <% if (booking.status !== 'confirmed') { %>
+            <span class="badge bg-warning text-dark">الحالة: <%= booking.status === 'pending' ? 'في الانتظار' : 'ملغي' %></span>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

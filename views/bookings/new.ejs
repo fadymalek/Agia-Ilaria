@@ -1,0 +1,301 @@
+<%- include('../partials/head', { title: booking ? 'تعديل حجز' : 'حجز جديد' }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container py-4 fade-up" style="max-width:860px;">
+  <%- include('../partials/flash') %>
+
+  <!-- Page Header -->
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="/bookings" class="btn btn-sm btn-outline-secondary rounded-circle" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;">
+      <i class="bi bi-arrow-right"></i>
+    </a>
+    <div>
+      <h4 class="mb-0 fw-800">
+        <% if (type === 'retreat') { %>
+          <i class="bi bi-moon-stars-fill me-2" style="color:#1565C0;"></i>
+          <%= booking ? 'تعديل خلوة روحية' : 'حجز خلوة جديدة' %>
+        <% } else { %>
+          <i class="bi bi-brightness-high-fill me-2" style="color:#2E7D32;"></i>
+          <%= booking ? 'تعديل يوم روحي' : 'حجز يوم روحي جديد' %>
+        <% } %>
+      </h4>
+      <% if (booking) { %>
+        <small class="text-muted">رقم الحجز: <strong class="booking-num"><%= booking.booking_number %></strong></small>
+      <% } %>
+    </div>
+  </div>
+
+  <form action="<%= booking ? '/bookings/'+booking.id+'?_method=PUT' : '/bookings' %>" method="POST">
+    <input type="hidden" name="booking_type" value="<%= type %>">
+
+    <!-- Section 1: Church Info -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="section-num">١</div>
+        <i class="bi bi-building" style="color:var(--gold);"></i>
+        بيانات الكنيسة
+      </div>
+      <div class="form-section-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label required-label">اسم الكنيسة</label>
+            <input type="text" class="form-control" name="church_name" required
+              value="<%= booking ? booking.church_name : '' %>" placeholder="كنيسة القديس...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">اسم القطاع</label>
+            <input type="text" class="form-control" name="sector_name"
+              value="<%= booking ? booking.sector_name||'' : '' %>" placeholder="قطاع غرب الاسكندرية...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">الكاهن المسؤل</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+              <input type="text" class="form-control" name="priest_name"
+                value="<%= booking ? booking.priest_name||'' : '' %>" placeholder="أبونا...">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">تليفون الكاهن</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-phone"></i></span>
+              <input type="tel" class="form-control" name="priest_phone" dir="ltr"
+                value="<%= booking ? booking.priest_phone||'' : '' %>" placeholder="01XXXXXXXXX">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label"><%= type==='retreat' ? 'اسم مشرفة الخلوة' : 'اسم المشرف' %></label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person-check"></i></span>
+              <input type="text" class="form-control" name="supervisor_name"
+                value="<%= booking ? booking.supervisor_name||'' : '' %>">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">تليفون المشرف</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-phone"></i></span>
+              <input type="tel" class="form-control" name="supervisor_phone" dir="ltr"
+                value="<%= booking ? booking.supervisor_phone||'' : '' %>" placeholder="01XXXXXXXXX">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Booking Details -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="section-num">٢</div>
+        <i class="bi bi-calendar-event" style="color:var(--gold);"></i>
+        تفاصيل <%= type==='retreat' ? 'الخلوة' : 'اليوم الروحي' %>
+      </div>
+      <div class="form-section-body">
+        <div class="row g-3">
+          <% if (type === 'retreat') { %>
+            <div class="col-md-4">
+              <label class="form-label required-label">تاريخ البداية</label>
+              <input type="date" class="form-control" name="start_date" id="startDate" required
+                value="<%= booking ? booking.start_date||'' : '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label required-label">تاريخ النهاية</label>
+              <input type="date" class="form-control" name="end_date" id="endDate" required
+                value="<%= booking ? booking.end_date||'' : '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">عدد الأيام <small class="text-muted">(يُحسب تلقائياً)</small></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-sun"></i></span>
+                <input type="number" class="form-control" name="num_days" id="numDays" min="1"
+                  value="<%= booking ? booking.num_days||'' : '' %>" placeholder="...">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">الدور المحجوز</label>
+              <select class="form-select" name="floor_number">
+                <option value="">اختر الدور</option>
+                <% ['الدور الأول','الدور الثاني','الدور الثالث','كامل البيت'].forEach(f => { %>
+                  <option value="<%= f %>" <%= booking&&booking.floor_number===f?'selected':'' %>><%= f %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">المرحلة العمرية / السن</label>
+              <input type="text" class="form-control" name="age_group"
+                value="<%= booking ? booking.age_group||'' : '' %>" placeholder="إعدادي، خدام، ابتدائي...">
+            </div>
+          <% } else { %>
+            <div class="col-md-4">
+              <label class="form-label required-label">تاريخ اليوم الروحي</label>
+              <input type="date" class="form-control" name="event_date" required
+                value="<%= booking ? booking.event_date||'' : '' %>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">من الساعة</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                <input type="time" class="form-control" name="start_time"
+                  value="<%= booking ? booking.start_time||'' : '' %>">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">إلى الساعة</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-clock-history"></i></span>
+                <input type="time" class="form-control" name="end_time"
+                  value="<%= booking ? booking.end_time||'' : '' %>">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">نوع الخدمة</label>
+              <input type="text" class="form-control" name="service_type"
+                value="<%= booking ? booking.service_type||'' : '' %>" placeholder="نوع النشاط الروحي">
+            </div>
+          <% } %>
+          <div class="col-md-<%= type==='retreat'?'6':'6' %>">
+            <label class="form-label">الفئة</label>
+            <select class="form-select" name="category">
+              <option value="">اختر الفئة</option>
+              <% ['إعدادي','ابتدائي','خدام','شباب','أمهات','مختلطة'].forEach(cat => { %>
+                <option value="<%= cat %>" <%= booking&&booking.category===cat?'selected':'' %>><%= cat %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">عدد الأفراد</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-people"></i></span>
+              <input type="number" class="form-control" name="num_people" min="0"
+                value="<%= booking ? booking.num_people||'' : '' %>" placeholder="0">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">المنطقة</label>
+            <input type="text" class="form-control" name="area"
+              value="<%= booking ? booking.area||'' : '' %>" placeholder="الهانوفيل...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">مشرفة البيت</label>
+            <input type="text" class="form-control" name="house_supervisor"
+              value="<%= booking ? booking.house_supervisor||'' : '' %>">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Financial -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="section-num">٣</div>
+        <i class="bi bi-cash-coin" style="color:var(--gold);"></i>
+        البيانات المالية
+      </div>
+      <div class="form-section-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">إجمالي المبلغ (ج.م)</label>
+            <div class="input-group">
+              <span class="input-group-text">ج</span>
+              <input type="number" class="form-control" name="total_amount" step="0.01" min="0" id="totalAmt"
+                value="<%= booking ? booking.total_amount||'' : '' %>" oninput="calcRemaining()" placeholder="0">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">المبلغ المدفوع (ج.م)</label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:#E8F5E9;color:#2E7D32;">ج</span>
+              <input type="number" class="form-control" name="paid_amount" step="0.01" min="0" id="paidAmt"
+                value="<%= booking ? booking.paid_amount||'' : '' %>" oninput="calcRemaining()" placeholder="0">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">المبلغ المتبقي (ج.م)</label>
+            <div class="input-group">
+              <span class="input-group-text" style="background:#FFEBEE;color:#B71C1C;">ج</span>
+              <input type="number" class="form-control" name="remaining_display" step="0.01" id="remainAmt"
+                value="<%= booking ? booking.remaining_amount||'' : '' %>" readonly
+                style="background:#FFF5F5;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: Extra -->
+    <div class="form-section">
+      <div class="form-section-header">
+        <div class="section-num">٤</div>
+        <i class="bi bi-info-circle" style="color:var(--gold);"></i>
+        ملاحظات وحالة الحجز
+      </div>
+      <div class="form-section-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">حالة الحجز</label>
+            <select class="form-select" name="status">
+              <option value="confirmed" <%= !booking||booking.status==='confirmed'?'selected':'' %>>
+                ✅ مؤكد
+              </option>
+              <option value="pending" <%= booking&&booking.status==='pending'?'selected':'' %>>
+                ⏳ في الانتظار
+              </option>
+              <option value="cancelled" <%= booking&&booking.status==='cancelled'?'selected':'' %>>
+                ❌ ملغي
+              </option>
+            </select>
+          </div>
+          <div class="col-md-8">
+            <label class="form-label">اسم الموقع (للإقرار)</label>
+            <input type="text" class="form-control" name="signature_name"
+              value="<%= booking ? booking.signature_name||'' : '' %>"
+              placeholder="الاسم الذي سيظهر في الإقرار">
+          </div>
+          <div class="col-12">
+            <label class="form-label">ملاحظات إضافية</label>
+            <textarea class="form-control" name="notes" rows="2"
+              placeholder="أي ملاحظات إضافية..."><%= booking ? booking.notes||'' : '' %></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex gap-2 justify-content-end mt-2 pb-4">
+      <a href="/bookings" class="btn btn-outline-secondary px-4 rounded-pill">
+        <i class="bi bi-x-circle me-1"></i>إلغاء
+      </a>
+      <button type="submit" class="btn btn-gold px-5 rounded-pill fw-700" style="font-size:1rem;">
+        <i class="bi bi-<%= booking ? 'check-circle' : 'plus-circle' %>-fill me-2"></i>
+        <%= booking ? 'حفظ التعديلات' : 'تسجيل الحجز' %>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function calcRemaining() {
+  const total = parseFloat(document.getElementById('totalAmt').value) || 0;
+  const paid  = parseFloat(document.getElementById('paidAmt').value) || 0;
+  const rem   = document.getElementById('remainAmt');
+  rem.value   = (total - paid).toFixed(2);
+  rem.style.color = (total - paid) > 0 ? '#B71C1C' : '#2E7D32';
+}
+
+const s = document.getElementById('startDate');
+const e = document.getElementById('endDate');
+const d = document.getElementById('numDays');
+if (s && e && d) {
+  function calcDays() {
+    if (s.value && e.value) {
+      const diff = (new Date(e.value) - new Date(s.value)) / 86400000;
+      if (diff > 0) d.value = Math.round(diff);
+    }
+  }
+  s.addEventListener('change', calcDays);
+  e.addEventListener('change', calcDays);
+}
+</script>
+</body>
+</html>

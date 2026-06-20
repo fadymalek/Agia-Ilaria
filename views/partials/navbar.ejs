@@ -1,0 +1,61 @@
+<nav class="navbar navbar-expand-lg main-navbar sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center gap-2 text-white text-decoration-none" href="/bookings">
+      <img src="/images/logo.png" height="38" alt="Logo" style="border-radius:50%;background:rgba(255,255,255,0.1);padding:2px;" onerror="this.style.display='none'">
+      <div class="brand-text">
+        <div class="brand-main text-white">بيت القديسة ايلاريا</div>
+        <div class="brand-sub text-white">نظام إدارة الحجوزات</div>
+      </div>
+    </a>
+
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" style="color:white;">
+      <i class="bi bi-list fs-4"></i>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
+        <li class="nav-item">
+          <a class="nav-link" href="/bookings">
+            <i class="bi bi-calendar-check me-1"></i>الحجوزات
+          </a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-plus-circle me-1"></i>حجز جديد
+          </a>
+          <ul class="dropdown-menu shadow-lg">
+            <li>
+              <a class="dropdown-item" href="/bookings/new?type=retreat">
+                <i class="bi bi-moon-stars-fill me-2" style="color:#1565C0;"></i>
+                خلوة روحية
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/bookings/new?type=spiritual_day">
+                <i class="bi bi-brightness-high-fill me-2" style="color:#2E7D32;"></i>
+                يوم روحي
+              </a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/reports">
+            <i class="bi bi-bar-chart-line me-1"></i>التقارير
+          </a>
+        </li>
+      </ul>
+
+      <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill" style="background:rgba(255,255,255,0.12);">
+          <i class="bi bi-person-circle text-white"></i>
+          <span class="text-white small fw-semibold"><%= user.full_name || user.username %></span>
+        </div>
+        <form action="/logout" method="POST" class="m-0">
+          <button type="submit" class="btn btn-sm rounded-pill px-3" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);">
+            <i class="bi bi-box-arrow-right me-1"></i>خروج
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</nav>

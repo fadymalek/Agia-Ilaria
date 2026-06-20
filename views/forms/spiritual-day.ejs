@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استمارة يوم روحي - بيت القديسة ايلاريا</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); min-height: 100vh;">
+
+<div class="container py-5" style="max-width: 700px;">
+  <!-- Header -->
+  <div class="text-center mb-4">
+    <img src="/images/logo.png" height="80" alt="Logo" onerror="this.style.display='none'">
+    <div class="small text-muted mt-1">بطريركية الأقباط الأرثوذكس - قطاع غرب الاسكندرية</div>
+    <h5 class="fw-bold mt-2" style="color: var(--gold-dark);">بيت القديسة ايلاريا للخلوات الروحية للبنات</h5>
+    <span class="badge fs-6 bg-success">استمارة تسجيل يوم روحي</span>
+  </div>
+
+  <% if (error) { %>
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i><%= error %></div>
+  <% } %>
+
+  <div class="card border-0 shadow">
+    <div class="card-body p-4">
+      <form action="/forms/spiritual-day" method="POST">
+        <h6 class="fw-bold mb-3 pb-2 border-bottom" style="color: var(--gold-dark);">
+          <i class="bi bi-church me-2"></i>بيانات الكنيسة
+        </h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label">اسم القطاع</label>
+            <input type="text" class="form-control" name="sector_name" placeholder="قطاع غرب الاسكندرية...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label required-label">اسم الكنيسة</label>
+            <input type="text" class="form-control" name="church_name" required placeholder="كنيسة...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">الكاهن المسؤل</label>
+            <input type="text" class="form-control" name="priest_name" placeholder="أبونا...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">تليفون الكاهن</label>
+            <input type="tel" class="form-control" name="priest_phone" dir="ltr" placeholder="01XXXXXXXXX">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">اسم المشرف</label>
+            <input type="text" class="form-control" name="supervisor_name">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">تليفون المشرف</label>
+            <input type="tel" class="form-control" name="supervisor_phone" dir="ltr" placeholder="01XXXXXXXXX">
+          </div>
+        </div>
+
+        <h6 class="fw-bold mb-3 pb-2 border-bottom" style="color: var(--gold-dark);">
+          <i class="bi bi-calendar-day me-2"></i>تفاصيل اليوم الروحي
+        </h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label">نوع الخدمة</label>
+            <input type="text" class="form-control" name="service_type" placeholder="نوع النشاط الروحي">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label required-label">عدد الأفراد</label>
+            <input type="number" class="form-control" name="num_people" min="1" required placeholder="0">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label required-label">تاريخ اليوم الروحي</label>
+            <input type="date" class="form-control" name="event_date" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">من الساعة</label>
+            <input type="time" class="form-control" name="start_time">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">إلى الساعة</label>
+            <input type="time" class="form-control" name="end_time">
+          </div>
+        </div>
+
+        <h6 class="fw-bold mb-3 pb-2 border-bottom" style="color: var(--gold-dark);">
+          <i class="bi bi-cash-coin me-2"></i>البيانات المالية
+        </h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label">إجمالي المبلغ (ج.م)</label>
+            <input type="number" class="form-control" name="total_amount" step="0.01" min="0" id="t" oninput="calcR()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">المبلغ المدفوع (ج.م)</label>
+            <input type="number" class="form-control" name="paid_amount" step="0.01" min="0" id="p" oninput="calcR()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">المبلغ المتبقي (ج.م)</label>
+            <input type="number" class="form-control bg-light" id="r" readonly>
+          </div>
+        </div>
+
+        <div class="mb-4 p-3 rounded" style="background: #f0fff0; border: 1px solid #c8e6c9;">
+          <h6 class="fw-bold mb-2">إقرار</h6>
+          <p class="small text-muted mb-2">
+            أقر أنا ............... الموقع أدناه بأنني اطلعت على تعليمات البيت ومسؤل عن سلامته ونظافته والحفاظ على هدوئه.
+          </p>
+          <label class="form-label small">الاسم (للتوقيع)</label>
+          <input type="text" class="form-control" name="signature_name">
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 py-3 fw-bold fs-5">
+          <i class="bi bi-send me-2"></i>إرسال طلب الحجز
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function calcR() {
+  const t = parseFloat(document.getElementById('t').value) || 0;
+  const p = parseFloat(document.getElementById('p').value) || 0;
+  document.getElementById('r').value = (t - p).toFixed(2);
+}
+</script>
+</body>
+</html>
