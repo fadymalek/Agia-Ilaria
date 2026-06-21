@@ -5,7 +5,9 @@ const router = express.Router();
 
 router.use(requireAuth);
 
-router.get('/', (req, res) => {
+const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+router.get('/', wrap(async (req, res) => {
   const today = new Date();
   const dayOfWeek = today.getDay();
   const weekStart = new Date(today);
@@ -16,7 +18,8 @@ router.get('/', (req, res) => {
   const from = req.query.from || weekStart.toISOString().split('T')[0];
   const to = req.query.to || weekEnd.toISOString().split('T')[0];
 
-  const list = bookings.findAll(b => {
+  const all = await bookings.findAll();
+  const list = all.filter(b => {
     const a = b.start_date || b.event_date || '';
     const z = b.end_date || b.event_date || b.start_date || '';
     return (a >= from && a <= to) || (z >= from && z <= to) || (a <= from && z >= to);
@@ -37,6 +40,6 @@ router.get('/', (req, res) => {
   };
 
   res.render('reports/index', { bookings: list, totals, from, to });
-});
+}));
 
 module.exports = router;

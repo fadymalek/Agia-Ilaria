@@ -1,75 +1,98 @@
-const fs = require('fs');
-const path = require('path');
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
-const DB_PATH = path.join(__dirname, 'data.json');
-
-function load() {
-  try {
-    if (fs.existsSync(DB_PATH)) {
-      return JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
-    }
-  } catch (e) { console.error('DB load error:', e.message); }
-  return { users: [], bookings: [], nextSeq: 1, nextId: 1 };
+if (!process.env.DATABASE_URL) {
+  console.error('\n[!] DATABASE_URL غير موجود. أضف رابط قاعدة بيانات Postgres في متغيرات البيئة.\n');
 }
 
-function save() {
-  fs.writeFileSync(DB_PATH, JSON.stringify(_data, null, 2), 'utf8');
+// Neon / Render / أغلب مزودي Postgres المُدارين يتطلبوا SSL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.PGSSL === 'disable' ? false : { rejectUnauthorized: false },
+});
+
+// تحويل صف قاعدة البيانات لكائن الحجز المسطّح المستخدم في الواجهات
+function rowToBooking(row) {
+  if (!row) return null;
+  return { ...row.data, id: row.id, booking_number: row.booking_number };
 }
 
-const _data = load();
+async function init() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id            SERIAL PRIMARY KEY,
+      username      TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      full_name     TEXT,
+      created_at    TIMESTAMPTZ DEFAULT now()
+    );
+  `);
 
-if (!_data.users.find(u => u.username === 'admin')) {
-  _data.users.push({
-    id: 1,
-    username: 'admin',
-    password_hash: bcrypt.hashSync('admin123', 10),
-    full_name: 'المسؤل',
-    created_at: new Date().toISOString()
-  });
-  save();
-  console.log('Default admin created: admin / admin123');
-}
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS bookings (
+      id             SERIAL PRIMARY KEY,
+      booking_number TEXT UNIQUE NOT NULL,
+      data           JSONB NOT NULL DEFAULT '{}'::jsonb,
+      created_at     TIMESTAMPTZ DEFAULT now()
+    );
+  `);
 
-function generateBookingNumber() {
-  const seq = _data.nextSeq++;
-  save();
-  return `HL-${String(seq).padStart(4, '0')}-${new Date().getFullYear()}`;
-}
+  // تسلسل أرقام الحجوزات
+  await pool.query(`CREATE SEQUENCE IF NOT EXISTS booking_seq START 1;`);
 
-function nextId() {
-  const id = _data.nextId++;
-  save();
-  return id;
+  // إنشاء مستخدم المسؤول الافتراضي إن لم يكن موجوداً
+  const { rows } = await pool.query(`SELECT 1 FROM users WHERE username = 'admin'`);
+  if (rows.length === 0) {
+    await pool.query(
+      `INSERT INTO users (username, password_hash, full_name) VALUES ($1, $2, $3)`,
+      ['admin', bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin123', 10), 'المسؤل']
+    );
+    console.log('تم إنشاء مستخدم المسؤول الافتراضي: admin');
+  }
 }
 
 const users = {
-  findOne: (pred) => _data.users.find(pred) || null,
+  async findByUsername(username) {
+    const { rows } = await pool.query(`SELECT * FROM users WHERE username = $1`, [username]);
+    return rows[0] || null;
+  },
 };
 
 const bookings = {
-  findAll: (pred) => pred ? _data.bookings.filter(pred) : [..._data.bookings],
-  findById: (id) => _data.bookings.find(b => b.id === id) || null,
-  insert: (item) => {
-    _data.bookings.push(item);
-    save();
-    return item;
+  async findAll() {
+    const { rows } = await pool.query(`SELECT id, booking_number, data FROM bookings ORDER BY id ASC`);
+    return rows.map(rowToBooking);
   },
-  update: (id, updates) => {
-    const idx = _data.bookings.findIndex(b => b.id === id);
-    if (idx >= 0) {
-      _data.bookings[idx] = { ..._data.bookings[idx], ...updates };
-      save();
-      return _data.bookings[idx];
-    }
-    return null;
+  async findById(id) {
+    const { rows } = await pool.query(`SELECT id, booking_number, data FROM bookings WHERE id = $1`, [id]);
+    return rowToBooking(rows[0]);
   },
-  remove: (id) => {
-    const idx = _data.bookings.findIndex(b => b.id === id);
-    if (idx >= 0) { _data.bookings.splice(idx, 1); save(); return true; }
-    return false;
+  async insert(item) {
+    const booking_number = item.booking_number;
+    const { rows } = await pool.query(
+      `INSERT INTO bookings (booking_number, data) VALUES ($1, $2) RETURNING id, booking_number, data`,
+      [booking_number, item]
+    );
+    return rowToBooking(rows[0]);
   },
-  count: (pred) => pred ? _data.bookings.filter(pred).length : _data.bookings.length,
+  async update(id, updates) {
+    // دمج التحديثات داخل حقل JSONB مع الحفاظ على القيم القديمة غير المُرسلة
+    const { rows } = await pool.query(
+      `UPDATE bookings SET data = data || $2::jsonb WHERE id = $1 RETURNING id, booking_number, data`,
+      [id, updates]
+    );
+    return rowToBooking(rows[0]);
+  },
+  async remove(id) {
+    const r = await pool.query(`DELETE FROM bookings WHERE id = $1`, [id]);
+    return r.rowCount > 0;
+  },
 };
 
-module.exports = { users, bookings, generateBookingNumber, nextId };
+async function generateBookingNumber() {
+  const { rows } = await pool.query(`SELECT nextval('booking_seq') AS seq`);
+  const seq = rows[0].seq;
+  return `HL-${String(seq).padStart(4, '0')}-${new Date().getFullYear()}`;
+}
+
+module.exports = { pool, init, users, bookings, generateBookingNumber };

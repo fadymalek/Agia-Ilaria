@@ -1,7 +1,9 @@
 const express = require('express');
-const { bookings, generateBookingNumber, nextId } = require('../db');
+const { bookings, generateBookingNumber } = require('../db');
 const requireAuth = require('../middleware/requireAuth');
 const router = express.Router();
+
+const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 router.use(requireAuth);
 
@@ -40,9 +42,10 @@ function buildBooking(data, extra = {}) {
   };
 }
 
-router.get('/', (req, res) => {
+router.get('/', wrap(async (req, res) => {
   const { search, type, status, from, to } = req.query;
-  let list = bookings.findAll();
+  const all = await bookings.findAll();
+  let list = all.slice();
 
   if (search) {
     const s = search.toLowerCase();
@@ -61,14 +64,14 @@ router.get('/', (req, res) => {
   list = list.reverse();
 
   const stats = {
-    total: bookings.count(),
-    retreat: bookings.count(b => b.booking_type === 'retreat'),
-    spiritual: bookings.count(b => b.booking_type === 'spiritual_day'),
-    pending: bookings.count(b => b.status === 'pending'),
+    total: all.length,
+    retreat: all.filter(b => b.booking_type === 'retreat').length,
+    spiritual: all.filter(b => b.booking_type === 'spiritual_day').length,
+    pending: all.filter(b => b.status === 'pending').length,
   };
 
   res.render('bookings/index', { bookings: list, stats, query: req.query });
-});
+}));
 
 router.get('/new', (req, res) => {
   const type = req.query.type;
@@ -78,42 +81,41 @@ router.get('/new', (req, res) => {
   res.render('bookings/new', { type, booking: null });
 });
 
-router.post('/', (req, res) => {
-  const booking_number = generateBookingNumber();
-  const id = nextId();
+router.post('/', wrap(async (req, res) => {
+  const booking_number = await generateBookingNumber();
   const booking = buildBooking(req.body, {
-    id, booking_number, source: 'admin',
+    booking_number, source: 'admin',
     created_by: req.session.user.id,
     created_at: new Date().toISOString(),
   });
-  bookings.insert(booking);
+  await bookings.insert(booking);
   req.flash('success', `تم تسجيل الحجز بنجاح - رقم الحجز: ${booking_number}`);
   res.redirect('/bookings');
-});
+}));
 
-router.get('/:id', (req, res) => {
-  const booking = bookings.findById(parseInt(req.params.id));
+router.get('/:id', wrap(async (req, res) => {
+  const booking = await bookings.findById(parseInt(req.params.id));
   if (!booking) { req.flash('error', 'الحجز غير موجود'); return res.redirect('/bookings'); }
   res.render('bookings/show', { booking });
-});
+}));
 
-router.get('/:id/edit', (req, res) => {
-  const booking = bookings.findById(parseInt(req.params.id));
+router.get('/:id/edit', wrap(async (req, res) => {
+  const booking = await bookings.findById(parseInt(req.params.id));
   if (!booking) { req.flash('error', 'الحجز غير موجود'); return res.redirect('/bookings'); }
   res.render('bookings/new', { type: booking.booking_type, booking });
-});
+}));
 
-router.put('/:id', (req, res) => {
+router.put('/:id', wrap(async (req, res) => {
   const updates = buildBooking(req.body);
-  bookings.update(parseInt(req.params.id), updates);
+  await bookings.update(parseInt(req.params.id), updates);
   req.flash('success', 'تم تحديث الحجز بنجاح');
   res.redirect(`/bookings/${req.params.id}`);
-});
+}));
 
-router.delete('/:id', (req, res) => {
-  bookings.remove(parseInt(req.params.id));
+router.delete('/:id', wrap(async (req, res) => {
+  await bookings.remove(parseInt(req.params.id));
   req.flash('success', 'تم حذف الحجز');
   res.redirect('/bookings');
-});
+}));
 
 module.exports = router;

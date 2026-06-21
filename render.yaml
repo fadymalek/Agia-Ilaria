@@ -1,0 +1,18 @@
+# إعداد Render Blueprint — يُنشئ خدمة الويب تلقائياً
+# قاعدة البيانات نستخدمها من Neon (مجانية ودائمة) ونضع رابطها في DATABASE_URL
+services:
+  - type: web
+    name: hilaria-booking
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false   # ضع رابط Neon هنا من لوحة تحكم Render
+      - key: ADMIN_PASSWORD
+        sync: false   # كلمة سر المسؤول الأولى

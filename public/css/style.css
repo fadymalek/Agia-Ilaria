@@ -505,3 +505,22 @@ body {
   .receipt-field { grid-template-columns: 140px 1fr; }
   .public-card .public-card-body { padding: 20px 16px; }
 }
+
+/* الهواتف الصغيرة */
+@media (max-width: 576px) {
+  body { font-size: 14px; }
+  .container-fluid.py-4.px-4 { padding-left: 12px !important; padding-right: 12px !important; }
+  .page-title { font-size: 1.15rem; }
+  .stat-num { font-size: 1.7rem; }
+  .stat-icon-wrap { width: 46px; height: 46px; font-size: 1.2rem; }
+  .brand-sub { display: none; }
+  /* تكديس حقول الإيصال رأسياً بدل عمودين */
+  .receipt-field { grid-template-columns: 1fr; gap: 2px; }
+  .receipt-label { padding-top: 6px; }
+  .receipt-header, .receipt-body { padding-left: 16px; padding-right: 16px; }
+  .login-body, .login-header { padding-left: 20px; padding-right: 20px; }
+  .public-card .public-card-body { padding: 18px 14px; }
+  /* أزرار رأس الصفحة تملأ العرض على الموبايل */
+  .page-header > .d-flex { width: 100%; }
+  .page-header > .d-flex .btn { flex: 1; }
+}

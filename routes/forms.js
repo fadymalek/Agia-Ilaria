@@ -1,19 +1,21 @@
 const express = require('express');
-const { bookings, generateBookingNumber, nextId } = require('../db');
+const { bookings, generateBookingNumber } = require('../db');
 const router = express.Router();
+
+const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 router.get('/retreat', (req, res) => res.render('forms/retreat', { error: null }));
 router.get('/spiritual-day', (req, res) => res.render('forms/spiritual-day', { error: null }));
 
-router.post('/retreat', (req, res) => {
+router.post('/retreat', wrap(async (req, res) => {
   const d = req.body;
   try {
     if (!d.church_name) throw new Error('اسم الكنيسة مطلوب');
-    const booking_number = generateBookingNumber();
+    const booking_number = await generateBookingNumber();
     const paid = parseFloat(d.paid_amount) || 0;
     const total = parseFloat(d.total_amount) || 0;
-    bookings.insert({
-      id: nextId(), booking_number, booking_type: 'retreat', status: 'pending', source: 'form',
+    await bookings.insert({
+      booking_number, booking_type: 'retreat', status: 'pending', source: 'form',
       sector_name: d.sector_name || null, church_name: d.church_name,
       priest_name: d.priest_name || null, priest_phone: d.priest_phone || null,
       supervisor_name: d.supervisor_name || null, supervisor_phone: d.supervisor_phone || null,
@@ -24,17 +26,17 @@ router.post('/retreat', (req, res) => {
     });
     res.render('forms/success', { booking_number, type: 'retreat' });
   } catch (e) { res.render('forms/retreat', { error: e.message }); }
-});
+}));
 
-router.post('/spiritual-day', (req, res) => {
+router.post('/spiritual-day', wrap(async (req, res) => {
   const d = req.body;
   try {
     if (!d.church_name) throw new Error('اسم الكنيسة مطلوب');
-    const booking_number = generateBookingNumber();
+    const booking_number = await generateBookingNumber();
     const paid = parseFloat(d.paid_amount) || 0;
     const total = parseFloat(d.total_amount) || 0;
-    bookings.insert({
-      id: nextId(), booking_number, booking_type: 'spiritual_day', status: 'pending', source: 'form',
+    await bookings.insert({
+      booking_number, booking_type: 'spiritual_day', status: 'pending', source: 'form',
       sector_name: d.sector_name || null, church_name: d.church_name,
       priest_name: d.priest_name || null, priest_phone: d.priest_phone || null,
       supervisor_name: d.supervisor_name || null, supervisor_phone: d.supervisor_phone || null,
@@ -45,6 +47,6 @@ router.post('/spiritual-day', (req, res) => {
     });
     res.render('forms/success', { booking_number, type: 'spiritual_day' });
   } catch (e) { res.render('forms/spiritual-day', { error: e.message }); }
-});
+}));
 
 module.exports = router;

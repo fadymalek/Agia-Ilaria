@@ -1,12 +1,17 @@
+require('dotenv').config();
+
 const express = require('express');
 const session = require('express-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const path = require('path');
 
-require('./db');
+const db = require('./db');
 
 const app = express();
+
+// خلف بروكسي (Render / Railway) لكي تعمل الكوكيز الآمنة بشكل صحيح
+app.set('trust proxy', 1);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -17,10 +22,14 @@ app.use(express.json());
 app.use(methodOverride('_method'));
 
 app.use(session({
-  secret: 'hilaria-2024-secret',
+  secret: process.env.SESSION_SECRET || 'hilaria-2024-secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 8 * 60 * 60 * 1000 }
+  cookie: {
+    maxAge: 8 * 60 * 60 * 1000,
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+  }
 }));
 
 app.use(flash());
@@ -43,12 +52,18 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`\n=================================`);
-  console.log(`بيت القديسة ايلاريا - نظام الحجوزات`);
-  console.log(`=================================`);
-  console.log(`الرابط: http://localhost:${PORT}`);
-  console.log(`المستخدم: admin`);
-  console.log(`كلمة السر: admin123`);
-  console.log(`=================================\n`);
-});
+
+db.init()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`\n=================================`);
+      console.log(`بيت القديسة ايلاريا - نظام الحجوزات`);
+      console.log(`=================================`);
+      console.log(`الخادم يعمل على المنفذ: ${PORT}`);
+      console.log(`=================================\n`);
+    });
+  })
+  .catch((err) => {
+    console.error('فشل الاتصال بقاعدة البيانات:', err.message);
+    process.exit(1);
+  });
