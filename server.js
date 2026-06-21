@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
-const session = require('express-session');
+const cookieSession = require('cookie-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const path = require('path');
@@ -10,7 +10,7 @@ const db = require('./db');
 
 const app = express();
 
-// خلف بروكسي (Render / Railway) لكي تعمل الكوكيز الآمنة بشكل صحيح
+// خلف بروكسي (Vercel / Render) لكي تعمل الكوكيز الآمنة بشكل صحيح
 app.set('trust proxy', 1);
 
 app.set('view engine', 'ejs');
@@ -21,16 +21,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride('_method'));
 
-app.use(session({
+// جلسات داخل كوكي موقّعة — تعمل على البيئات الـ serverless (Vercel)
+app.use(cookieSession({
+  name: 'hilaria_sess',
   secret: process.env.SESSION_SECRET || 'hilaria-2024-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 8 * 60 * 60 * 1000,
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-  }
+  maxAge: 8 * 60 * 60 * 1000,
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: process.env.NODE_ENV === 'production',
 }));
+
+// connect-flash يحتاج توافقاً مع واجهة express-session (regenerate/save)
+app.use((req, res, next) => {
+  if (req.session && !req.session.regenerate) req.session.regenerate = (cb) => cb && cb();
+  if (req.session && !req.session.save) req.session.save = (cb) => cb && cb();
+  next();
+});
 
 app.use(flash());
 
@@ -39,6 +45,13 @@ app.use((req, res, next) => {
   res.locals.success = req.flash('success');
   res.locals.error = req.flash('error');
   next();
+});
+
+// تهيئة قاعدة البيانات مرة واحدة لكل نسخة (تعمل عند أول طلب — مناسب لـ serverless)
+let initPromise;
+app.use((req, res, next) => {
+  initPromise = initPromise || db.init();
+  initPromise.then(() => next()).catch(next);
 });
 
 app.use('/', require('./routes/auth'));
@@ -51,19 +64,16 @@ app.use((err, req, res, next) => {
   res.status(500).send('حدث خطأ في الخادم');
 });
 
-const PORT = process.env.PORT || 3000;
+module.exports = app;
 
-db.init()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`\n=================================`);
-      console.log(`بيت القديسة ايلاريا - نظام الحجوزات`);
-      console.log(`=================================`);
-      console.log(`الخادم يعمل على المنفذ: ${PORT}`);
-      console.log(`=================================\n`);
-    });
-  })
-  .catch((err) => {
-    console.error('فشل الاتصال بقاعدة البيانات:', err.message);
-    process.exit(1);
+// تشغيل خادم محلي فقط (على Vercel يُستورد التطبيق بدون listen)
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`\n=================================`);
+    console.log(`بيت القديسة ايلاريا - نظام الحجوزات`);
+    console.log(`=================================`);
+    console.log(`الخادم يعمل على المنفذ: ${PORT}`);
+    console.log(`=================================\n`);
   });
+}
