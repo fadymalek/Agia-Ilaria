@@ -68,9 +68,19 @@
       eventClick: function (info) {
         info.jsEvent.preventDefault();
         if (info.event.url) window.location.href = info.event.url;
-      }
+      },
+      datesSet: updateScrollClass
     });
+
+    // السحب الأفقي يتفعّل فقط في عرض الشهر على الموبايل
+    function updateScrollClass() {
+      const wrap = el.closest('.calendar-scroll');
+      if (!wrap) return;
+      wrap.classList.toggle('month-scroll', calendar.view.type === 'dayGridMonth' && window.innerWidth < 768);
+    }
+
     calendar.render();
+    updateScrollClass();
 
     // شريط أدوات متجاوب حسب حجم الشاشة
     let small = isSmall();
@@ -80,6 +90,7 @@
         calendar.setOption('headerToolbar', toolbarFor(small));
         calendar.updateSize();
       }
+      updateScrollClass();
     });
   });
 </script>

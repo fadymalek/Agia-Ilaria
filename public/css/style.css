@@ -636,18 +636,38 @@ a:hover .stat-card { transform: translateY(-3px); }
 .fc .fc-daygrid-event-harness { margin-bottom: 3px; }
 .fc .fc-daygrid-day-top { padding: 4px 6px 0; }
 
+/* تحسينات عرض الشهر */
+.fc .fc-daygrid-event {
+  color: #fff !important;
+  border-radius: 6px;
+  padding: 2px 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+}
+.fc .fc-daygrid-event .fc-event-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.fc .fc-daygrid-event .fc-event-time { font-weight: 700; opacity: 0.9; }
+.fc .fc-daygrid-day:hover { background: rgba(196,150,58,0.05); }
+.fc .fc-day-other { background: #FBF8F2; }
+.fc .fc-day-other .fc-daygrid-day-number { opacity: 0.45; }
+.fc .fc-daygrid-more-link {
+  background: var(--gold-light); color: var(--gold-dark);
+  border-radius: 5px; padding: 0 6px; font-weight: 700; font-size: 0.74rem;
+}
+.fc .fc-popover { border: none; box-shadow: var(--shadow-lg); border-radius: var(--radius); overflow: hidden; }
+.fc .fc-popover-header { background: var(--cream); color: var(--gold-dark); font-weight: 700; }
+
 /* تمرير أفقي للتقويم على الموبايل عشان كل يوم ياخد مساحته */
 .calendar-scroll { width: 100%; }
 @media (max-width: 767px) {
-  .calendar-scroll {
+  /* السحب الأفقي يتفعّل فقط في عرض الشهر */
+  .calendar-scroll.month-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 10px;
   }
-  /* عرض أصغر = سحب أقل، مع خطوط مصغّرة عشان يفضل واضح */
-  .calendar-scroll #calendar { min-width: 540px; }
-  .calendar-scroll::-webkit-scrollbar { height: 8px; }
-  .calendar-scroll::-webkit-scrollbar-thumb { background: #D4B870; border-radius: 4px; }
+  .calendar-scroll.month-scroll #calendar { min-width: 540px; }
+  .calendar-scroll.month-scroll::-webkit-scrollbar { height: 8px; }
+  .calendar-scroll.month-scroll::-webkit-scrollbar-thumb { background: #D4B870; border-radius: 4px; }
 
   .fc .fc-col-header-cell-cushion { font-size: 0.72rem; padding: 6px 2px; }
   .fc .fc-daygrid-day-number { font-size: 0.78rem; }
