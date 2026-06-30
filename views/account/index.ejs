@@ -1,0 +1,50 @@
+<%- include('../partials/head', { title: 'حسابي' }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container py-4 fade-up" style="max-width: 560px;">
+  <%- include('../partials/flash') %>
+
+  <div class="page-header">
+    <h1 class="page-title"><i class="bi bi-person-gear"></i>حسابي</h1>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header"><i class="bi bi-person-badge me-2"></i>بياناتي</div>
+    <div class="card-body">
+      <div class="d-flex justify-content-between py-1"><span class="text-muted">الاسم</span><strong><%= user.full_name %></strong></div>
+      <div class="d-flex justify-content-between py-1"><span class="text-muted">الدخول</span><strong dir="ltr"><%= user.email || user.username %></strong></div>
+      <div class="d-flex justify-content-between py-1"><span class="text-muted">الصلاحية</span>
+        <strong><%= user.role === 'admin' ? 'مسؤول كامل' : 'مستخدم' %></strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><i class="bi bi-shield-lock me-2"></i>تغيير كلمة المرور</div>
+    <div class="card-body">
+      <form action="/account/password" method="POST">
+        <div class="mb-3">
+          <label class="form-label required-label">كلمة المرور الحالية</label>
+          <input type="password" class="form-control" name="current_password" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label required-label">كلمة المرور الجديدة</label>
+          <input type="password" class="form-control" name="new_password" required placeholder="6 حروف على الأقل">
+        </div>
+        <div class="mb-3">
+          <label class="form-label required-label">تأكيد كلمة المرور الجديدة</label>
+          <input type="password" class="form-control" name="confirm_password" required>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-gold rounded-pill px-5 fw-700">
+            <i class="bi bi-check-circle me-1"></i>حفظ
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

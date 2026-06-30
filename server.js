@@ -14,6 +14,7 @@ const app = express();
 // helpers متاحة لكل القوالب (EJS)
 app.locals.typeInfo = helpers.typeInfo;
 app.locals.isStayType = helpers.isStayType;
+app.locals.waLink = helpers.waLink;
 
 // خلف بروكسي (Vercel / Render) لكي تعمل الكوكيز الآمنة بشكل صحيح
 app.set('trust proxy', 1);
@@ -64,6 +65,7 @@ app.use('/bookings', require('./routes/bookings'));
 app.use('/forms', require('./routes/forms'));
 app.use('/reports', require('./routes/reports'));
 app.use('/users', require('./routes/users'));
+app.use('/account', require('./routes/account'));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

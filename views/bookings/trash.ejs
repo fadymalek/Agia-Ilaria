@@ -1,0 +1,99 @@
+<%- include('../partials/head', { title: 'سلة المحذوفات' }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container-fluid py-4 px-4 fade-up">
+  <%- include('../partials/flash') %>
+
+  <div class="page-header">
+    <h1 class="page-title"><i class="bi bi-trash3"></i>سلة المحذوفات</h1>
+    <a href="/bookings" class="btn btn-outline-secondary rounded-pill px-4">
+      <i class="bi bi-arrow-right me-1"></i>رجوع للحجوزات
+    </a>
+  </div>
+
+  <div class="alert" style="background:#FFF3E0;color:#8B6914;">
+    <i class="bi bi-info-circle me-2"></i>
+    الحجوزات هنا اتحذفت بس **متمسحتش نهائياً**. تقدر ترجّعها في أي وقت، أو تمسحها نهائياً.
+  </div>
+
+  <% if (bookings.length === 0) { %>
+    <div class="card">
+      <div class="card-body text-center py-5 text-muted">
+        <i class="bi bi-trash" style="font-size:3rem;color:#D4B870;"></i>
+        <p class="mt-3 mb-0 fw-semibold">سلة المحذوفات فاضية</p>
+      </div>
+    </div>
+  <% } else { %>
+
+  <!-- Desktop table -->
+  <div class="card d-none d-lg-block">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table mb-0">
+          <thead>
+            <tr>
+              <th class="pe-3">رقم الحجز</th>
+              <th>اسم الكنيسة</th>
+              <th>النوع</th>
+              <th>التاريخ</th>
+              <th>تاريخ الحذف</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% bookings.forEach(b => { const ti = typeInfo(b.booking_type); %>
+            <tr>
+              <td class="pe-3"><span class="booking-num"><%= b.booking_number %></span></td>
+              <td class="fw-700"><%= b.church_name %></td>
+              <td><span class="badge" style="background:<%= ti.bg %>;color:<%= ti.color %>;"><i class="bi <%= ti.icon %> me-1"></i><%= ti.label %></span></td>
+              <td style="font-size:0.9rem;"><%= b.start_date || b.event_date || '-' %><% if (b.end_date) { %> ← <%= b.end_date %><% } %></td>
+              <td style="font-size:0.85rem;" class="text-muted"><%= b.deleted_at ? new Date(b.deleted_at).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }) : '' %></td>
+              <td>
+                <div class="d-flex gap-1">
+                  <form action="/bookings/<%= b.id %>/restore" method="POST">
+                    <button type="submit" class="btn btn-sm btn-success rounded-pill px-3"><i class="bi bi-arrow-counterclockwise me-1"></i>استرجاع</button>
+                  </form>
+                  <form action="/bookings/<%= b.id %>/purge" method="POST" onsubmit="return confirm('حذف نهائي لا رجعة فيه لحجز <%= b.church_name %>؟')">
+                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="حذف نهائي"><i class="bi bi-trash"></i></button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile cards -->
+  <div class="bk-list d-lg-none">
+    <% bookings.forEach(b => { const ti = typeInfo(b.booking_type); %>
+    <div class="bk-card">
+      <div class="bk-card-head">
+        <div><div class="bk-church"><%= b.church_name %></div></div>
+        <span class="badge" style="background:<%= ti.bg %>;color:<%= ti.color %>;"><i class="bi <%= ti.icon %> me-1"></i><%= ti.label %></span>
+      </div>
+      <div class="bk-grid">
+        <div class="cell"><label>رقم الحجز</label><span class="val"><%= b.booking_number %></span></div>
+        <div class="cell"><label>التاريخ</label><span class="val"><%= b.start_date || b.event_date || '-' %></span></div>
+        <div class="cell" style="grid-column:1 / -1;"><label>تاريخ الحذف</label><span class="val" style="font-weight:600;"><%= b.deleted_at ? new Date(b.deleted_at).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }) : '' %></span></div>
+      </div>
+      <div class="bk-actions">
+        <form action="/bookings/<%= b.id %>/restore" method="POST" style="flex:1;">
+          <button type="submit" class="btn btn-success w-100"><i class="bi bi-arrow-counterclockwise me-1"></i>استرجاع</button>
+        </form>
+        <form action="/bookings/<%= b.id %>/purge" method="POST" onsubmit="return confirm('حذف نهائي لا رجعة فيه؟')">
+          <button type="submit" class="btn btn-outline-danger" title="حذف نهائي"><i class="bi bi-trash"></i></button>
+        </form>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+
+  <% } %>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

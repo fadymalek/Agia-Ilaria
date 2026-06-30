@@ -1,10 +1,32 @@
 const express = require('express');
+const ExcelJS = require('exceljs');
 const { bookings, generateBookingNumber } = require('../db');
-const { VALID_TYPES, cairoToday, bookingDate, bookingWhen } = require('../lib/helpers');
+const { VALID_TYPES, cairoToday, bookingDate, bookingWhen, typeInfo } = require('../lib/helpers');
 const requireAuth = require('../middleware/requireAuth');
 const router = express.Router();
 
 const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+const STATUS_LABEL = { confirmed: 'مؤكد', pending: 'في الانتظار', cancelled: 'ملغي' };
+
+// تطبيق فلاتر البحث على القائمة (مشترك بين العرض والتصدير)
+function applyFilters(list, q) {
+  const { search, type, status, from, to } = q;
+  if (search) {
+    const s = search.toLowerCase();
+    list = list.filter(b =>
+      (b.church_name || '').toLowerCase().includes(s) ||
+      (b.priest_name || '').toLowerCase().includes(s) ||
+      (b.booking_number || '').toLowerCase().includes(s) ||
+      (b.supervisor_name || '').toLowerCase().includes(s)
+    );
+  }
+  if (type) list = list.filter(b => b.booking_type === type);
+  if (status) list = list.filter(b => b.status === status);
+  if (from) list = list.filter(b => (b.start_date || b.event_date || '') >= from);
+  if (to) list = list.filter(b => (b.end_date || b.event_date || b.start_date || '') <= to);
+  return list;
+}
 
 // ترتيب: الجاري النهاردة أولاً، ثم القادم (الأقرب أولاً)، ثم المنتهي (الأحدث أولاً)
 const WHEN_ORDER = { today: 0, upcoming: 1, past: 2 };
@@ -56,23 +78,8 @@ function buildBooking(data, extra = {}) {
 }
 
 router.get('/', wrap(async (req, res) => {
-  const { search, type, status, from, to } = req.query;
   const all = await bookings.findAll();
-  let list = all.slice();
-
-  if (search) {
-    const s = search.toLowerCase();
-    list = list.filter(b =>
-      (b.church_name || '').toLowerCase().includes(s) ||
-      (b.priest_name || '').toLowerCase().includes(s) ||
-      (b.booking_number || '').toLowerCase().includes(s) ||
-      (b.supervisor_name || '').toLowerCase().includes(s)
-    );
-  }
-  if (type) list = list.filter(b => b.booking_type === type);
-  if (status) list = list.filter(b => b.status === status);
-  if (from) list = list.filter(b => (b.start_date || b.event_date || '') >= from);
-  if (to) list = list.filter(b => (b.end_date || b.event_date || b.start_date || '') <= to);
+  let list = applyFilters(all.slice(), req.query);
 
   // حالة التوقيت لكل حجز ثم الترتيب بالتواريخ
   const today = cairoToday();
@@ -105,6 +112,58 @@ router.get('/new', (req, res) => {
   res.render('bookings/new', { type, booking: null });
 });
 
+// تصدير قائمة الحجوزات (مع نفس الفلاتر) إلى Excel
+router.get('/export', wrap(async (req, res) => {
+  const all = await bookings.findAll();
+  const list = applyFilters(all.slice(), req.query)
+    .sort((a, b) => bookingDate(a).localeCompare(bookingDate(b)));
+
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('الحجوزات', { views: [{ rightToLeft: true, state: 'frozen', ySplit: 1 }] });
+  ws.columns = [
+    { header: 'رقم الحجز', key: 'num', width: 16 },
+    { header: 'اسم الكنيسة', key: 'church', width: 28 },
+    { header: 'القطاع', key: 'sector', width: 16 },
+    { header: 'النوع', key: 'type', width: 14 },
+    { header: 'الفئة', key: 'category', width: 12 },
+    { header: 'من تاريخ', key: 'start', width: 13 },
+    { header: 'إلى تاريخ', key: 'end', width: 13 },
+    { header: 'الكاهن', key: 'priest', width: 18 },
+    { header: 'تليفون الكاهن', key: 'priest_phone', width: 15 },
+    { header: 'العدد', key: 'people', width: 8 },
+    { header: 'الإجمالي', key: 'total', width: 12 },
+    { header: 'المدفوع', key: 'paid', width: 12 },
+    { header: 'المتبقي', key: 'remaining', width: 12 },
+    { header: 'الحالة', key: 'status', width: 12 },
+    { header: 'ملاحظات', key: 'notes', width: 28 },
+  ];
+  ws.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  ws.getRow(1).alignment = { horizontal: 'center', vertical: 'middle' };
+  ws.getRow(1).height = 22;
+  ws.getRow(1).eachCell(c => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF8B6914' } }; });
+
+  list.forEach(b => ws.addRow({
+    num: b.booking_number, church: b.church_name || '', sector: b.sector_name || '',
+    type: typeInfo(b.booking_type).label, category: b.category || '',
+    start: b.start_date || b.event_date || '', end: b.end_date || '',
+    priest: b.priest_name || '', priest_phone: b.priest_phone || '',
+    people: b.num_people || 0, total: b.total_amount || 0, paid: b.paid_amount || 0,
+    remaining: b.remaining_amount || 0, status: STATUS_LABEL[b.status] || b.status || '', notes: b.notes || '',
+  }));
+  ['total', 'paid', 'remaining'].forEach(k => { ws.getColumn(k).numFmt = '#,##0'; });
+
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename="hilaria-bookings-${cairoToday()}.xlsx"`);
+  await wb.xlsx.write(res);
+  res.end();
+}));
+
+// سلة المحذوفات
+router.get('/trash', wrap(async (req, res) => {
+  const deleted = await bookings.findDeleted();
+  res.render('bookings/trash', { bookings: deleted });
+}));
+
 router.post('/', wrap(async (req, res) => {
   const booking_number = await generateBookingNumber();
   const booking = buildBooking(req.body, {
@@ -136,10 +195,25 @@ router.put('/:id', wrap(async (req, res) => {
   res.redirect(`/bookings/${req.params.id}`);
 }));
 
+// حذف ناعم → ينقل لسلة المحذوفات (يمكن استرجاعه)
 router.delete('/:id', wrap(async (req, res) => {
-  await bookings.remove(parseInt(req.params.id));
-  req.flash('success', 'تم حذف الحجز');
+  await bookings.softDelete(parseInt(req.params.id));
+  req.flash('success', 'تم نقل الحجز لسلة المحذوفات — تقدر ترجّعه');
   res.redirect('/bookings');
+}));
+
+// استرجاع حجز من سلة المحذوفات
+router.post('/:id/restore', wrap(async (req, res) => {
+  await bookings.restore(parseInt(req.params.id));
+  req.flash('success', 'تم استرجاع الحجز بنجاح');
+  res.redirect('/bookings/trash');
+}));
+
+// حذف نهائي (لا رجعة فيه)
+router.post('/:id/purge', wrap(async (req, res) => {
+  await bookings.purge(parseInt(req.params.id));
+  req.flash('success', 'تم حذف الحجز نهائياً');
+  res.redirect('/bookings/trash');
 }));
 
 // الموافقة على طلب (تأكيد)

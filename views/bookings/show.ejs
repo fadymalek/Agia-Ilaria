@@ -5,8 +5,29 @@
   <%- include('../partials/flash') %>
 
   <!-- Actions Bar -->
+  <%
+    const _ti = typeInfo(booking.booking_type);
+    const _date = isStayType(booking.booking_type)
+      ? ((booking.start_date || '') + (booking.end_date ? ' ← ' + booking.end_date : ''))
+      : ((booking.event_date || '') + (booking.start_time ? ' - ' + booking.start_time : ''));
+    const _waText =
+      'بيت القديسة ايلاريا\n' +
+      'تأكيد حجز: ' + _ti.label + '\n' +
+      'رقم الحجز: ' + booking.booking_number + '\n' +
+      'الكنيسة: ' + (booking.church_name || '') + '\n' +
+      (_date ? ('التاريخ: ' + _date + '\n') : '') +
+      'العدد: ' + (booking.num_people || 0) + '\n' +
+      'المدفوع: ' + (booking.paid_amount || 0) + ' ج | المتبقي: ' + (booking.remaining_amount || 0) + ' ج';
+    const _waPhone = booking.priest_phone || booking.supervisor_phone;
+    const _waUrl = waLink(_waPhone, _waText);
+  %>
   <div class="d-flex align-items-center gap-2 mb-4 no-print flex-wrap">
     <a href="/bookings" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-right me-1"></i>رجوع</a>
+    <% if (_waUrl) { %>
+      <a href="<%= _waUrl %>" target="_blank" class="btn btn-sm text-white" style="background:#25D366;">
+        <i class="bi bi-whatsapp me-1"></i>إرسال واتساب
+      </a>
+    <% } %>
     <% if (booking.status === 'pending') { %>
       <form action="/bookings/<%= booking.id %>/approve" method="POST" class="m-0">
         <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle me-1"></i>موافقة وتأكيد</button>

@@ -40,12 +40,18 @@ async function init() {
   // تسلسل أرقام الحجوزات
   await pool.query(`CREATE SEQUENCE IF NOT EXISTS booking_seq START 1;`);
 
-  // أعمدة إضافية لإدارة المستخدمين (إيميل + صلاحية + آخر دخول) — إضافة آمنة
+  // أعمدة إضافية لإدارة المستخدمين (إيميل + صلاحية + آخر دخول + أمان) — إضافة آمنة
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT`);
   await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMPTZ`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS pw_changed BOOLEAN DEFAULT false`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_attempts INT DEFAULT 0`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TIMESTAMPTZ`);
   // أي مستخدم قديم بدون صلاحية يبقى مسؤولاً (المستخدمون الأصليون)
   await pool.query(`UPDATE users SET role = 'admin' WHERE role IS NULL`);
+
+  // سلة المحذوفات: عمود حذف ناعم للحجوزات — لا يُمسح الحجز فعلياً
+  await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ`);
 
   // إنشاء مستخدم المسؤول الافتراضي إن لم يكن موجوداً
   const { rows } = await pool.query(`SELECT 1 FROM users WHERE username = 'admin'`);
@@ -90,11 +96,26 @@ const users = {
     );
     return rows[0];
   },
+  // إعادة تعيين كلمة المرور من المسؤول → يُعتبر مؤقتاً (المستخدم يغيّره)
   async setPassword(id, password_hash) {
-    await pool.query(`UPDATE users SET password_hash = $2 WHERE id = $1`, [id, password_hash]);
+    await pool.query(`UPDATE users SET password_hash = $2, pw_changed = false WHERE id = $1`, [id, password_hash]);
+  },
+  // تغيير المستخدم لكلمة مروره بنفسه
+  async changeOwnPassword(id, password_hash) {
+    await pool.query(`UPDATE users SET password_hash = $2, pw_changed = true WHERE id = $1`, [id, password_hash]);
   },
   async setLastLogin(id) {
-    await pool.query(`UPDATE users SET last_login = now() WHERE id = $1`, [id]);
+    await pool.query(`UPDATE users SET last_login = now(), failed_attempts = 0, locked_until = NULL WHERE id = $1`, [id]);
+  },
+  // حماية من محاولات الدخول الكثيرة: قفل 15 دقيقة بعد 5 محاولات فاشلة
+  async recordFailedLogin(id) {
+    const { rows } = await pool.query(
+      `UPDATE users SET failed_attempts = COALESCE(failed_attempts,0) + 1,
+         locked_until = CASE WHEN COALESCE(failed_attempts,0) + 1 >= 5 THEN now() + interval '15 minutes' ELSE locked_until END
+       WHERE id = $1 RETURNING failed_attempts, locked_until`,
+      [id]
+    );
+    return rows[0];
   },
   async remove(id) {
     const r = await pool.query(`DELETE FROM users WHERE id = $1`, [id]);
@@ -107,13 +128,25 @@ const users = {
 };
 
 const bookings = {
+  // الحجوزات النشطة فقط (غير المحذوفة)
   async findAll() {
-    const { rows } = await pool.query(`SELECT id, booking_number, data FROM bookings ORDER BY id ASC`);
+    const { rows } = await pool.query(
+      `SELECT id, booking_number, data FROM bookings WHERE deleted_at IS NULL ORDER BY id ASC`
+    );
     return rows.map(rowToBooking);
   },
   async findById(id) {
-    const { rows } = await pool.query(`SELECT id, booking_number, data FROM bookings WHERE id = $1`, [id]);
+    const { rows } = await pool.query(
+      `SELECT id, booking_number, data FROM bookings WHERE id = $1 AND deleted_at IS NULL`, [id]
+    );
     return rowToBooking(rows[0]);
+  },
+  // المحذوفة (سلة المحذوفات)
+  async findDeleted() {
+    const { rows } = await pool.query(
+      `SELECT id, booking_number, data, deleted_at FROM bookings WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC`
+    );
+    return rows.map(r => ({ ...rowToBooking(r), deleted_at: r.deleted_at }));
   },
   async insert(item) {
     const booking_number = item.booking_number;
@@ -126,13 +159,24 @@ const bookings = {
   async update(id, updates) {
     // دمج التحديثات داخل حقل JSONB مع الحفاظ على القيم القديمة غير المُرسلة
     const { rows } = await pool.query(
-      `UPDATE bookings SET data = data || $2::jsonb WHERE id = $1 RETURNING id, booking_number, data`,
+      `UPDATE bookings SET data = data || $2::jsonb WHERE id = $1 AND deleted_at IS NULL RETURNING id, booking_number, data`,
       [id, updates]
     );
     return rowToBooking(rows[0]);
   },
-  async remove(id) {
-    const r = await pool.query(`DELETE FROM bookings WHERE id = $1`, [id]);
+  // حذف ناعم → ينقل لسلة المحذوفات
+  async softDelete(id) {
+    const r = await pool.query(`UPDATE bookings SET deleted_at = now() WHERE id = $1 AND deleted_at IS NULL`, [id]);
+    return r.rowCount > 0;
+  },
+  // استرجاع من سلة المحذوفات
+  async restore(id) {
+    const r = await pool.query(`UPDATE bookings SET deleted_at = NULL WHERE id = $1`, [id]);
+    return r.rowCount > 0;
+  },
+  // حذف نهائي (لا رجعة فيه)
+  async purge(id) {
+    const r = await pool.query(`DELETE FROM bookings WHERE id = $1 AND deleted_at IS NOT NULL`, [id]);
     return r.rowCount > 0;
   },
 };
