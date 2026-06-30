@@ -49,6 +49,13 @@
             <i class="bi bi-bar-chart-line me-1"></i>التقارير
           </a>
         </li>
+        <% if (user && user.role === 'admin') { %>
+        <li class="nav-item">
+          <a class="nav-link" href="/users">
+            <i class="bi bi-people me-1"></i>المستخدمين
+          </a>
+        </li>
+        <% } %>
       </ul>
 
       <div class="d-flex align-items-center gap-2">

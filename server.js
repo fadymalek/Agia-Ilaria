@@ -63,6 +63,7 @@ app.use('/', require('./routes/auth'));
 app.use('/bookings', require('./routes/bookings'));
 app.use('/forms', require('./routes/forms'));
 app.use('/reports', require('./routes/reports'));
+app.use('/users', require('./routes/users'));
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

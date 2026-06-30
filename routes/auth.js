@@ -17,12 +17,16 @@ router.get('/login', (req, res) => {
 
 router.post('/login', wrap(async (req, res) => {
   const { username, password } = req.body;
-  const user = await users.findByUsername(username);
+  const user = await users.findByLogin((username || '').trim());
   if (!user || !bcrypt.compareSync(password, user.password_hash)) {
-    req.flash('error', 'اسم المستخدم أو كلمة المرور غير صحيحة');
+    req.flash('error', 'البريد الإلكتروني/اسم المستخدم أو كلمة المرور غير صحيحة');
     return res.redirect('/login');
   }
-  req.session.user = { id: user.id, username: user.username, full_name: user.full_name };
+  await users.setLastLogin(user.id);
+  req.session.user = {
+    id: user.id, username: user.username, full_name: user.full_name,
+    email: user.email, role: user.role || 'user',
+  };
   res.redirect('/bookings');
 }));
 

@@ -1,0 +1,129 @@
+<%- include('../partials/head', { title: 'المستخدمين' }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container-fluid py-4 px-4 fade-up">
+  <%- include('../partials/flash') %>
+
+  <div class="page-header">
+    <h1 class="page-title"><i class="bi bi-people-fill"></i>إدارة المستخدمين</h1>
+    <button class="btn btn-gold rounded-pill px-4" data-bs-toggle="collapse" data-bs-target="#addUser">
+      <i class="bi bi-person-plus-fill me-1"></i>إضافة مستخدم
+    </button>
+  </div>
+
+  <!-- Add user form (collapsible) -->
+  <div class="collapse mb-4" id="addUser">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-person-plus me-2"></i>مستخدم جديد</div>
+      <div class="card-body">
+        <form action="/users" method="POST" class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label required-label">الاسم</label>
+            <input type="text" class="form-control" name="full_name" required placeholder="الاسم بالكامل">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label required-label">البريد الإلكتروني</label>
+            <input type="email" class="form-control" name="email" dir="ltr" required placeholder="name@example.com">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label required-label">كلمة المرور</label>
+            <input type="text" class="form-control" name="password" required placeholder="6 حروف على الأقل">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">الصلاحية</label>
+            <select class="form-select" name="role">
+              <option value="user">مستخدم</option>
+              <option value="admin">مسؤول كامل</option>
+            </select>
+          </div>
+          <div class="col-12 d-flex justify-content-end">
+            <button type="submit" class="btn btn-gold rounded-pill px-5 fw-700">
+              <i class="bi bi-check-circle me-1"></i>حفظ المستخدم
+            </button>
+          </div>
+        </form>
+        <div class="small text-muted mt-2">
+          <i class="bi bi-info-circle me-1"></i>
+          المستخدم بيدخل بالبريد الإلكتروني وكلمة المرور. "مسؤول كامل" يقدر يدير المستخدمين، "مستخدم" يدير الحجوزات بس.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users table -->
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-cards mb-0">
+          <thead>
+            <tr>
+              <th class="pe-3">الاسم</th>
+              <th>البريد / اسم الدخول</th>
+              <th>الصلاحية</th>
+              <th>آخر دخول</th>
+              <th>تاريخ الإضافة</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(u => { %>
+            <tr>
+              <td class="td-title">
+                <div class="fw-700" style="font-size:1rem;">
+                  <i class="bi bi-person-circle me-1" style="color:var(--gold);"></i><%= u.full_name || '-' %>
+                  <% if (u.id === user.id) { %><span class="badge ms-1" style="background:var(--gold-light);color:var(--gold-dark);">أنت</span><% } %>
+                </div>
+              </td>
+              <td data-label="البريد / الدخول" dir="ltr" style="text-align:right;"><%= u.email || u.username %></td>
+              <td data-label="الصلاحية">
+                <% if (u.role === 'admin') { %>
+                  <span class="badge" style="background:#E8F0FE;color:#1565C0;"><i class="bi bi-shield-lock-fill me-1"></i>مسؤول</span>
+                <% } else { %>
+                  <span class="badge" style="background:#F1F3F4;color:#5F6368;"><i class="bi bi-person me-1"></i>مستخدم</span>
+                <% } %>
+              </td>
+              <td data-label="آخر دخول" style="font-size:0.88rem;">
+                <% if (u.last_login) { %>
+                  <%= new Date(u.last_login).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }) %>
+                <% } else { %><span class="text-muted">لم يدخل بعد</span><% } %>
+              </td>
+              <td data-label="تاريخ الإضافة" style="font-size:0.85rem;" class="text-muted">
+                <%= u.created_at ? new Date(u.created_at).toLocaleDateString('ar-EG', { dateStyle: 'medium' }) : '' %>
+              </td>
+              <td class="td-actions">
+                <div class="d-flex gap-1">
+                  <button class="btn btn-sm btn-outline-secondary rounded-pill px-2" title="تغيير كلمة المرور"
+                    data-bs-toggle="collapse" data-bs-target="#pw<%= u.id %>">
+                    <i class="bi bi-key"></i>
+                  </button>
+                  <% if (u.id !== user.id) { %>
+                  <form action="/users/<%= u.id %>/delete" method="POST"
+                    onsubmit="return confirm('حذف المستخدم <%= u.full_name %>؟')">
+                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="حذف">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                  <% } %>
+                </div>
+                <div class="collapse mt-2" id="pw<%= u.id %>">
+                  <form action="/users/<%= u.id %>/reset-password" method="POST" class="d-flex gap-1">
+                    <input type="text" class="form-control form-control-sm" name="password" placeholder="كلمة مرور جديدة" required>
+                    <button type="submit" class="btn btn-sm btn-gold rounded-pill px-3">حفظ</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card-footer" style="background:var(--cream);border-top:1.5px solid var(--border);padding:10px 16px;">
+      <small class="text-muted fw-semibold"><i class="bi bi-people me-1"></i>عدد المستخدمين: <strong><%= users.length %></strong></small>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

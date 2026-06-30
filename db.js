@@ -40,11 +40,18 @@ async function init() {
   // تسلسل أرقام الحجوزات
   await pool.query(`CREATE SEQUENCE IF NOT EXISTS booking_seq START 1;`);
 
+  // أعمدة إضافية لإدارة المستخدمين (إيميل + صلاحية + آخر دخول) — إضافة آمنة
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT`);
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login TIMESTAMPTZ`);
+  // أي مستخدم قديم بدون صلاحية يبقى مسؤولاً (المستخدمون الأصليون)
+  await pool.query(`UPDATE users SET role = 'admin' WHERE role IS NULL`);
+
   // إنشاء مستخدم المسؤول الافتراضي إن لم يكن موجوداً
   const { rows } = await pool.query(`SELECT 1 FROM users WHERE username = 'admin'`);
   if (rows.length === 0) {
     await pool.query(
-      `INSERT INTO users (username, password_hash, full_name) VALUES ($1, $2, $3)`,
+      `INSERT INTO users (username, password_hash, full_name, role) VALUES ($1, $2, $3, 'admin')`,
       ['admin', bcrypt.hashSync(process.env.ADMIN_PASSWORD || 'admin123', 10), 'المسؤل']
     );
     console.log('تم إنشاء مستخدم المسؤول الافتراضي: admin');
@@ -52,9 +59,50 @@ async function init() {
 }
 
 const users = {
+  // الدخول بالإيميل أو اسم المستخدم
+  async findByLogin(login) {
+    const { rows } = await pool.query(
+      `SELECT * FROM users WHERE lower(username) = lower($1) OR lower(email) = lower($1) LIMIT 1`,
+      [login]
+    );
+    return rows[0] || null;
+  },
   async findByUsername(username) {
     const { rows } = await pool.query(`SELECT * FROM users WHERE username = $1`, [username]);
     return rows[0] || null;
+  },
+  async findById(id) {
+    const { rows } = await pool.query(`SELECT * FROM users WHERE id = $1`, [id]);
+    return rows[0] || null;
+  },
+  async findAll() {
+    const { rows } = await pool.query(
+      `SELECT id, username, email, full_name, role, created_at, last_login FROM users ORDER BY id ASC`
+    );
+    return rows;
+  },
+  async create({ username, email, password_hash, full_name, role }) {
+    const { rows } = await pool.query(
+      `INSERT INTO users (username, email, password_hash, full_name, role)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, username, email, full_name, role, created_at`,
+      [username, email, password_hash, full_name, role]
+    );
+    return rows[0];
+  },
+  async setPassword(id, password_hash) {
+    await pool.query(`UPDATE users SET password_hash = $2 WHERE id = $1`, [id, password_hash]);
+  },
+  async setLastLogin(id) {
+    await pool.query(`UPDATE users SET last_login = now() WHERE id = $1`, [id]);
+  },
+  async remove(id) {
+    const r = await pool.query(`DELETE FROM users WHERE id = $1`, [id]);
+    return r.rowCount > 0;
+  },
+  async countAdmins() {
+    const { rows } = await pool.query(`SELECT count(*) AS c FROM users WHERE role = 'admin'`);
+    return parseInt(rows[0].c, 10);
   },
 };
 
