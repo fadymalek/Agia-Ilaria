@@ -89,16 +89,16 @@ body {
 /* شعار الموقع على خلفية بيضاء عشان يبان فوق اللون الدهبي */
 .navbar-logo {
   display: inline-flex; align-items: center; justify-content: center;
-  background: #fff; border-radius: 14px; padding: 4px 9px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  background: #fff; border-radius: 10px; padding: 2px;
+  overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
-.navbar-logo img { height: 56px; width: auto; display: block; }
+.navbar-logo img { height: 64px; width: auto; display: block; }
 .login-logo-chip {
   display: inline-flex; align-items: center; justify-content: center;
-  background: #fff; border-radius: 20px; padding: 12px 20px;
+  background: #fff; border-radius: 18px; padding: 6px 10px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
-.login-logo-chip img { height: 120px; width: auto; display: block; }
+.login-logo-chip img { height: 140px; width: auto; display: block; }
 
 /* ===== CARDS ===== */
 .card {
@@ -708,8 +708,8 @@ a:hover .stat-card { transform: translateY(-3px); }
   .public-card .public-card-body { padding: 20px 16px; }
 
   /* ===== الشريط العلوي على الموبايل ===== */
-  .main-navbar { padding: 0 12px; min-height: 64px; }
-  .navbar-logo img { height: 46px; }
+  .main-navbar { padding: 0 12px; min-height: 70px; }
+  .navbar-logo img { height: 54px; }
   .main-navbar .navbar-toggler { padding: 4px 8px; }
   .main-navbar .navbar-toggler:focus { box-shadow: none; }
   .main-navbar .navbar-collapse {
