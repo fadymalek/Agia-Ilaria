@@ -86,6 +86,20 @@ body {
 .brand-main { font-size: 0.95rem; font-weight: 800; letter-spacing: -0.2px; }
 .brand-sub { font-size: 0.68rem; opacity: 0.75; }
 
+/* شعار الموقع على خلفية بيضاء عشان يبان فوق اللون الدهبي */
+.navbar-logo {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #fff; border-radius: 12px; padding: 3px 7px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+.navbar-logo img { height: 40px; width: auto; display: block; }
+.login-logo-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #fff; border-radius: 18px; padding: 10px 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.login-logo-chip img { height: 90px; width: auto; display: block; }
+
 /* ===== CARDS ===== */
 .card {
   border-radius: var(--radius) !important;
