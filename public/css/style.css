@@ -534,68 +534,75 @@ a .stat-card { transition: transform 0.2s; }
 a:hover .stat-card { transform: translateY(-3px); }
 .alert { display: flex; align-items: center; }
 
+/* ===== بطاقات الحجز على الموبايل ===== */
+.bk-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.bk-card-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+  padding: 12px 14px;
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+}
+.bk-church { font-weight: 800; font-size: 1.06rem; line-height: 1.35; color: var(--text); }
+.bk-sector { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+.bk-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 14px 2px; }
+.bk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; padding: 10px 14px 12px; }
+.bk-grid .cell { display: flex; flex-direction: column; gap: 1px; }
+.bk-grid label { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; }
+.bk-grid .val { font-size: 0.96rem; font-weight: 700; }
+.bk-actions { display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 14px 14px; border-top: 1px dashed var(--border); }
+.bk-actions .btn { width: 46px; height: 42px; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem; padding: 0; }
+.bk-actions form { margin: 0; }
+.bk-card.today { border: 2px solid var(--gold); box-shadow: var(--shadow); }
+.bk-card.today .bk-card-head { background: linear-gradient(135deg, #FFF8E1, #FBEFC9); }
+.bk-card.past { opacity: 0.72; }
+.booking-num { display: inline-block; }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 991px) {
   .stat-num { font-size: 2rem; }
   .receipt-field { grid-template-columns: 140px 1fr; }
   .public-card .public-card-body { padding: 20px 16px; }
 
-  /* الجدول يتحول لكروت على الموبايل/التابلت */
-  .table-cards thead { display: none; }
-  .table-cards, .table-cards tbody { display: block; width: 100%; }
-  .table-cards tr {
-    display: block;
-    background: var(--white);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-xs);
-    padding: 12px 14px 8px;
-    margin-bottom: 14px;
+  /* ===== الشريط العلوي على الموبايل ===== */
+  .main-navbar { padding: 0 12px; min-height: 56px; }
+  .main-navbar .navbar-toggler { padding: 4px 8px; }
+  .main-navbar .navbar-toggler:focus { box-shadow: none; }
+  .main-navbar .navbar-collapse {
+    background: rgba(0,0,0,0.14);
+    margin: 8px -12px 0;
+    padding: 10px 12px 12px;
+    border-top: 1px solid rgba(255,255,255,0.18);
+    border-radius: 0 0 14px 14px;
   }
-  .table-cards tr.row-today { box-shadow: 0 0 0 2px var(--gold); }
-  .table-cards tr.row-today td { background: transparent !important; box-shadow: none; }
-  .table-cards tr.row-past { opacity: 0.7; }
-  .table-cards td {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 8px 0 !important;
-    border: none !important;
-    border-bottom: 1px dashed #F0E8D8 !important;
-    text-align: left;
-    font-size: 0.95rem;
-    white-space: normal;
+  .main-navbar .navbar-nav { gap: 3px !important; }
+  .main-navbar .nav-link {
+    padding: 13px 14px !important;
+    border-radius: 10px;
+    font-size: 1rem;
   }
-  .table-cards td:last-child { border-bottom: none !important; }
-  .table-cards td::before {
-    content: attr(data-label);
-    font-weight: 700;
-    color: var(--gold-dark);
-    font-size: 0.82rem;
-    flex-shrink: 0;
+  .main-navbar .nav-item .dropdown-menu { margin: 2px 6px 6px; background: rgba(255,255,255,0.97); }
+  /* كتلة المستخدم + الخروج: تحت بعرض كامل */
+  .main-navbar .navbar-collapse > .d-flex {
+    margin-top: 10px; padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    flex-direction: column; align-items: stretch !important; gap: 10px !important;
   }
-  .table-cards tr:hover td { background: transparent !important; }
-  /* عنوان الكارت (اسم الكنيسة) فوق وبعرض كامل */
-  .table-cards td.td-title {
-    display: block;
-    border-bottom: 2px solid var(--gold-light) !important;
-    margin-bottom: 4px;
-    padding-bottom: 8px !important;
-  }
-  .table-cards td.td-title::before { content: none; }
-  .table-cards td.td-title .fw-700 { font-size: 1.12rem !important; }
-  /* صف الأزرار */
-  .table-cards td.td-actions {
-    display: block;
-    padding-top: 12px !important;
-    border-bottom: none !important;
-  }
-  .table-cards td.td-actions::before { content: none; }
-  .table-cards td.td-actions .d-flex { justify-content: flex-start; flex-wrap: wrap; gap: 8px !important; }
-  .table-cards td.td-actions .btn { width: 42px; height: 38px; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; }
-  .table-cards td.td-actions form { margin: 0; }
+  .main-navbar .navbar-collapse > .d-flex > div { justify-content: center; padding: 10px !important; }
+  .main-navbar .navbar-collapse form, .main-navbar .navbar-collapse form .btn { width: 100%; }
+
+  /* ===== التنبيهات (النهاردة / الانتظار) ===== */
+  .alert { border-radius: var(--radius); padding: 12px 14px; font-size: 0.95rem; }
 }
+
+/* إظهار البطاقات بدل الجدول على الموبايل/التابلت */
+@media (min-width: 992px) { .bk-list { display: none !important; } }
 
 /* الهواتف الصغيرة */
 @media (max-width: 576px) {
