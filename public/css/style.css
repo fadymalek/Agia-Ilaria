@@ -1,25 +1,27 @@
-@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
 
 :root {
+  --font-sans: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, system-ui, sans-serif;
   --gold: #C4963A;
   --gold-dark: #8B6914;
   --gold-deeper: #5C3D0A;
   --gold-light: #F5E6C8;
-  --gold-bg: #FAF7F2;
-  --cream: #FDF9F3;
-  --text: #2D2418;
+  --gold-bg: #F7F6F3;
+  --cream: #FBF9F5;
+  --text: #211C14;
   --text-muted: #8A7560;
-  --border: #EDE0CC;
+  --border: #ECE7DE;
   --white: #FFFFFF;
-  --shadow-xs: 0 1px 4px rgba(139,105,20,0.06);
-  --shadow-sm: 0 2px 10px rgba(139,105,20,0.08);
-  --shadow: 0 4px 20px rgba(139,105,20,0.12);
-  --shadow-lg: 0 8px 40px rgba(139,105,20,0.18);
-  --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  /* ظلال رمادية ناعمة عصرية بدل البنية */
+  --shadow-xs: 0 1px 2px rgba(24,22,18,0.05);
+  --shadow-sm: 0 2px 8px rgba(24,22,18,0.06), 0 1px 2px rgba(24,22,18,0.04);
+  --shadow: 0 6px 24px rgba(24,22,18,0.08), 0 2px 6px rgba(24,22,18,0.04);
+  --shadow-lg: 0 16px 48px rgba(24,22,18,0.14), 0 4px 12px rgba(24,22,18,0.06);
+  --radius-xs: 7px;
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -27,12 +29,13 @@
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+  font-family: var(--font-sans);
   background-color: var(--gold-bg);
   color: var(--text);
   direction: rtl;
   min-height: 100vh;
   font-size: 15px;
+  letter-spacing: -0.1px;
 }
 
 /* ===== SCROLLBAR ===== */
@@ -43,10 +46,11 @@ body {
 
 /* ===== NAVBAR ===== */
 .main-navbar {
-  background: linear-gradient(135deg, var(--gold-deeper) 0%, var(--gold-dark) 60%, #9A7420 100%);
-  box-shadow: 0 2px 20px rgba(0,0,0,0.25);
+  background: linear-gradient(180deg, var(--gold-dark) 0%, var(--gold-deeper) 100%);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset, 0 4px 18px rgba(24,22,18,0.12);
+  border-bottom: 1px solid rgba(0,0,0,0.12);
   padding: 0 1rem;
-  min-height: 76px;
+  min-height: 74px;
 }
 .main-navbar .navbar-brand {
   padding: 10px 0;
@@ -180,21 +184,21 @@ a:hover .metric-card, .metric-card:hover {
 
 /* ===== BUTTONS ===== */
 .btn {
-  font-family: 'Tajawal', sans-serif;
+  font-family: var(--font-sans);
   font-weight: 600;
   border-radius: var(--radius-sm) !important;
   transition: all 0.2s;
 }
 .btn-gold {
-  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  background: var(--gold-dark);
   color: white;
   border: none;
-  box-shadow: 0 4px 12px rgba(139,105,20,0.25);
+  box-shadow: 0 1px 2px rgba(24,22,18,0.18);
 }
 .btn-gold:hover, .btn-gold:focus {
-  background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold-deeper) 100%);
+  background: var(--gold-deeper);
   color: white;
-  box-shadow: 0 6px 18px rgba(139,105,20,0.35);
+  box-shadow: 0 4px 14px rgba(139,105,20,0.30);
   transform: translateY(-1px);
 }
 .btn-outline-gold {
@@ -215,7 +219,7 @@ a:hover .metric-card, .metric-card:hover {
   padding: 10px 14px;
   background: var(--white);
   color: var(--text);
-  font-family: 'Tajawal', sans-serif;
+  font-family: var(--font-sans);
   font-size: 0.93rem;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -625,10 +629,10 @@ a:hover .stat-card { transform: translateY(-3px); }
   --fc-page-bg-color: var(--white);
   --fc-list-event-hover-bg-color: var(--gold-light);
 }
-.fc { font-family: 'Tajawal', sans-serif; }
+.fc { font-family: var(--font-sans); }
 .fc .fc-toolbar-title { color: var(--gold-deeper); font-weight: 800; font-size: 1.25rem; }
 .fc .fc-button {
-  font-family: 'Tajawal', sans-serif; font-weight: 700;
+  font-family: var(--font-sans); font-weight: 700;
   border-radius: var(--radius-sm) !important; box-shadow: none !important;
   text-transform: none; padding: 7px 14px;
 }
@@ -803,4 +807,65 @@ a:hover .stat-card { transform: translateY(-3px); }
   /* روابط الفورمات بعرض مناسب */
   .quick-links .btn { flex: 1 1 auto; }
   .fc-toolbar.fc-header-toolbar { justify-content: center; }
+}
+
+/* ===== لوحة تعليمات البيت في الفورمات العامة ===== */
+.house-info {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+.house-info > summary {
+  list-style: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--gold-dark), var(--gold-deeper));
+  color: #fff;
+  padding: 15px 20px;
+  font-weight: 700;
+  font-size: 1.02rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+.house-info > summary::-webkit-details-marker { display: none; }
+.house-info > summary .chev { margin-inline-start: auto; transition: transform 0.25s ease; }
+.house-info[open] > summary .chev { transform: rotate(180deg); }
+.house-info-body { padding: 6px 22px 18px; }
+.hi-sec { padding: 15px 0; border-bottom: 1px dashed var(--border); }
+.hi-sec:last-child { border-bottom: none; }
+.hi-h {
+  display: flex; align-items: center; gap: 9px;
+  font-weight: 800; color: var(--gold-dark);
+  font-size: 1rem; margin-bottom: 11px;
+}
+.hi-h i { font-size: 1.15rem; }
+.hi-list { list-style: none; margin: 0; padding: 0; }
+.hi-list li {
+  position: relative; padding: 5px 22px 5px 0;
+  font-size: 0.93rem; color: var(--text); line-height: 1.75;
+}
+.hi-list li::before {
+  content: ''; position: absolute; right: 6px; top: 13px;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--gold);
+}
+.hi-note {
+  display: flex; align-items: center; gap: 7px;
+  background: #FFF8E8; border: 1px solid var(--gold-light);
+  border-radius: 10px; padding: 10px 14px; margin-top: 10px;
+  font-size: 0.92rem; font-weight: 700; color: var(--gold-deeper);
+}
+.hi-floor { display: flex; gap: 12px; padding: 6px 0; align-items: baseline; flex-wrap: wrap; }
+.hi-floor .fl {
+  font-weight: 800; color: var(--gold-dark); min-width: 92px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.hi-floor .fv { color: var(--text); font-size: 0.93rem; }
+@media (max-width: 576px) {
+  .house-info-body { padding: 4px 16px 14px; }
+  .hi-floor .fl { min-width: 100%; }
+  .hi-floor { gap: 2px; padding: 8px 0; }
 }

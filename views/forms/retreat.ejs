@@ -23,6 +23,8 @@
     <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i><%= error %></div>
   <% } %>
 
+  <%- include('../partials/house-info') %>
+
   <div class="card border-0 shadow">
     <div class="card-body p-4">
       <form action="/forms/retreat" method="POST">
