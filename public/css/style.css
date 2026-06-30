@@ -610,6 +610,21 @@ a:hover .stat-card { transform: translateY(-3px); }
 .fc .fc-more-link { color: var(--gold-dark); font-weight: 700; }
 .fc a { text-decoration: none; }
 
+/* عرض القائمة/الأجندة (الأفضل للموبايل) */
+.fc .fc-list { border-radius: var(--radius); overflow: hidden; border-color: var(--border); }
+.fc-theme-standard .fc-list-day-cushion { background: var(--cream) !important; }
+.fc .fc-list-day-text, .fc .fc-list-day-side-text {
+  color: var(--gold-dark); font-weight: 800; font-size: 0.95rem; text-decoration: none;
+}
+.fc .fc-list-event { cursor: pointer; }
+.fc .fc-list-event td { padding: 14px 12px; border-color: #F2EBE0; }
+.fc .fc-list-event:hover td { background: var(--gold-light); }
+.fc .fc-list-event-time { color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+.fc .fc-list-event-title { font-weight: 700; color: var(--text); font-size: 1rem; }
+.fc .fc-list-event-graphic .fc-list-event-dot { border-width: 7px; }
+.fc .fc-list-empty { background: var(--white); color: var(--text-muted); font-weight: 600; padding: 48px 16px; }
+.fc .fc-list-sticky .fc-list-day > * { box-shadow: var(--shadow-xs); }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 991px) {
   .stat-num { font-size: 2rem; }

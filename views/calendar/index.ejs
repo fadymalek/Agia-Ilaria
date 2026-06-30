@@ -37,19 +37,23 @@
 
     function isSmall() { return window.innerWidth < 768; }
 
+    function toolbarFor(small) {
+      return {
+        start: small ? 'prev,next' : 'prev,next today',
+        center: 'title',
+        end: small ? 'listMonth,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+      };
+    }
+
     const calendar = new FullCalendar.Calendar(el, {
       locale: 'ar',
       direction: 'rtl',
-      initialView: 'dayGridMonth',
+      initialView: isSmall() ? 'listMonth' : 'dayGridMonth',
       height: 'auto',
       expandRows: true,
-      headerToolbar: {
-        start: 'prev,next today',
-        center: 'title',
-        end: isSmall() ? 'dayGridMonth,listMonth' : 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
-      },
+      headerToolbar: toolbarFor(isSmall()),
       buttonText: { today: 'النهاردة', month: 'شهر', week: 'أسبوع', day: 'يوم', list: 'قائمة' },
-      noEventsText: 'لا توجد حجوزات في هذه الفترة',
+      noEventsText: 'لا توجد حجوزات في هذا الشهر',
       events: '/calendar/events',
       eventDisplay: 'block',
       displayEventTime: true,
@@ -63,17 +67,14 @@
     });
     calendar.render();
 
-    // تعديل شريط الأدوات حسب حجم الشاشة
+    // التبديل بين القائمة (موبايل) وعرض الشهر (ديسكتوب) حسب حجم الشاشة
     let small = isSmall();
     window.addEventListener('resize', function () {
       if (isSmall() !== small) {
         small = isSmall();
-        calendar.setOption('headerToolbar', {
-          start: 'prev,next today',
-          center: 'title',
-          end: small ? 'dayGridMonth,listMonth' : 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
-        });
+        calendar.setOption('headerToolbar', toolbarFor(small));
         calendar.setOption('dayMaxEvents', small ? 2 : 4);
+        calendar.changeView(small ? 'listMonth' : 'dayGridMonth');
       }
     });
   });
