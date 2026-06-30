@@ -46,7 +46,7 @@ body {
   background: linear-gradient(135deg, var(--gold-deeper) 0%, var(--gold-dark) 60%, #9A7420 100%);
   box-shadow: 0 2px 20px rgba(0,0,0,0.25);
   padding: 0 1rem;
-  min-height: 62px;
+  min-height: 76px;
 }
 .main-navbar .navbar-brand {
   padding: 10px 0;
@@ -89,16 +89,16 @@ body {
 /* شعار الموقع على خلفية بيضاء عشان يبان فوق اللون الدهبي */
 .navbar-logo {
   display: inline-flex; align-items: center; justify-content: center;
-  background: #fff; border-radius: 12px; padding: 3px 7px;
+  background: #fff; border-radius: 14px; padding: 4px 9px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
-.navbar-logo img { height: 40px; width: auto; display: block; }
+.navbar-logo img { height: 56px; width: auto; display: block; }
 .login-logo-chip {
   display: inline-flex; align-items: center; justify-content: center;
-  background: #fff; border-radius: 18px; padding: 10px 16px;
+  background: #fff; border-radius: 20px; padding: 12px 20px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
-.login-logo-chip img { height: 90px; width: auto; display: block; }
+.login-logo-chip img { height: 120px; width: auto; display: block; }
 
 /* ===== CARDS ===== */
 .card {
@@ -708,7 +708,8 @@ a:hover .stat-card { transform: translateY(-3px); }
   .public-card .public-card-body { padding: 20px 16px; }
 
   /* ===== الشريط العلوي على الموبايل ===== */
-  .main-navbar { padding: 0 12px; min-height: 56px; }
+  .main-navbar { padding: 0 12px; min-height: 64px; }
+  .navbar-logo img { height: 46px; }
   .main-navbar .navbar-toggler { padding: 4px 8px; }
   .main-navbar .navbar-toggler:focus { box-shadow: none; }
   .main-navbar .navbar-collapse {
