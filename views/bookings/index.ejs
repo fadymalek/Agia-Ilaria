@@ -162,7 +162,7 @@
   </div>
 
   <!-- Quick Links to public forms -->
-  <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+  <div class="d-flex align-items-center gap-2 mb-3 flex-wrap quick-links">
     <small class="text-muted fw-semibold me-1"><i class="bi bi-share me-1"></i>روابط الحجز للكنائس:</small>
     <a href="/forms/retreat" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
       <i class="bi bi-moon-stars me-1"></i>فورم خلوة جماعية
@@ -189,7 +189,7 @@
         </div>
       <% } else { %>
       <div class="table-responsive">
-        <table class="table mb-0">
+        <table class="table table-cards mb-0">
           <thead>
             <tr>
               <th class="pe-3">رقم الحجز</th>
@@ -208,23 +208,23 @@
           <tbody>
             <% bookings.forEach(b => { %>
             <tr class="<%= b._when==='today' ? 'row-today' : (b._when==='past' ? 'row-past' : '') %>">
-              <td class="pe-3">
+              <td class="pe-3" data-label="رقم الحجز">
                 <span class="booking-num"><%= b.booking_number %></span>
                 <% if (b.source === 'form') { %>
-                  <br><span class="badge mt-1" style="background:#EDE0FF;color:#6A0DAD;font-size:0.68rem;">أونلاين</span>
+                  <span class="badge ms-1" style="background:#EDE0FF;color:#6A0DAD;font-size:0.68rem;">أونلاين</span>
                 <% } %>
               </td>
-              <td>
+              <td class="td-title">
                 <div class="fw-700" style="font-size:1rem;"><%= b.church_name %></div>
                 <% if (b.sector_name) { %><div class="text-muted" style="font-size:0.82rem;"><%= b.sector_name %></div><% } %>
               </td>
-              <td>
+              <td data-label="النوع">
                 <% const ti = typeInfo(b.booking_type); %>
                 <span class="badge" style="background:<%= ti.bg %>;color:<%= ti.color %>;">
                   <i class="bi <%= ti.icon %> me-1"></i><%= ti.label %>
                 </span>
               </td>
-              <td style="font-size:0.9rem;">
+              <td data-label="التاريخ" style="font-size:0.9rem;">
                 <% if (isStayType(b.booking_type) && b.start_date) { %>
                   <div><i class="bi bi-calendar2 me-1 text-muted"></i><%= b.start_date %></div>
                   <div class="text-muted"><i class="bi bi-arrow-left me-1"></i><%= b.end_date || '' %></div>
@@ -242,24 +242,24 @@
                   <span class="badge mt-1 when-upcoming"><i class="bi bi-hourglass-top me-1"></i>قادم</span>
                 <% } %>
               </td>
-              <td style="font-size:0.92rem;"><%= b.priest_name || '-' %></td>
-              <td>
+              <td data-label="الكاهن" style="font-size:0.92rem;"><%= b.priest_name || '-' %></td>
+              <td data-label="الفئة">
                 <% if (b.category) { %>
                   <span class="badge" style="background:var(--gold-light);color:var(--gold-dark);"><%= b.category %></span>
                 <% } else { %><span class="text-muted">-</span><% } %>
               </td>
-              <td class="text-center fw-700"><%= b.num_people || 0 %></td>
-              <td>
+              <td class="text-center fw-700" data-label="العدد"><%= b.num_people || 0 %></td>
+              <td data-label="المدفوع">
                 <span class="fw-700" style="color:#1B5E20;"><%= (b.paid_amount||0).toLocaleString() %></span>
                 <small class="text-muted"> ج</small>
               </td>
-              <td>
+              <td data-label="المتبقي">
                 <span class="fw-700" style="color:<%= (b.remaining_amount||0) > 0 ? '#B71C1C' : '#9E9E9E' %>;">
                   <%= (b.remaining_amount||0).toLocaleString() %>
                 </span>
                 <small class="text-muted"> ج</small>
               </td>
-              <td>
+              <td data-label="الحالة">
                 <% if (b.status === 'confirmed') { %>
                   <span class="badge" style="background:#E8F5E9;color:#2E7D32;"><i class="bi bi-check-circle-fill me-1"></i>مؤكد</span>
                 <% } else if (b.status === 'pending') { %>
@@ -268,7 +268,7 @@
                   <span class="badge" style="background:#F5F5F5;color:#757575;"><i class="bi bi-x-circle me-1"></i>ملغي</span>
                 <% } %>
               </td>
-              <td>
+              <td class="td-actions">
                 <div class="d-flex gap-1">
                   <% if (b.status === 'pending') { %>
                   <form action="/bookings/<%= b.id %>/approve" method="POST">

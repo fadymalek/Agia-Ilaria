@@ -520,28 +520,109 @@ body {
 }
 .print-only { display: none; }
 
+/* ===== UI POLISH ===== */
+* { -webkit-tap-highlight-color: rgba(196,150,58,0.15); }
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+a { text-decoration: none; }
+.btn { letter-spacing: 0; }
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible, .form-control:focus-visible, .form-select:focus-visible {
+  outline: 2px solid var(--gold); outline-offset: 1px;
+}
+.stat-card .card-body { cursor: default; }
+a .stat-card { transition: transform 0.2s; }
+a:hover .stat-card { transform: translateY(-3px); }
+.alert { display: flex; align-items: center; }
+
 /* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
+@media (max-width: 991px) {
   .stat-num { font-size: 2rem; }
   .receipt-field { grid-template-columns: 140px 1fr; }
   .public-card .public-card-body { padding: 20px 16px; }
+
+  /* الجدول يتحول لكروت على الموبايل/التابلت */
+  .table-cards thead { display: none; }
+  .table-cards, .table-cards tbody { display: block; width: 100%; }
+  .table-cards tr {
+    display: block;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-xs);
+    padding: 12px 14px 8px;
+    margin-bottom: 14px;
+  }
+  .table-cards tr.row-today { box-shadow: 0 0 0 2px var(--gold); }
+  .table-cards tr.row-today td { background: transparent !important; box-shadow: none; }
+  .table-cards tr.row-past { opacity: 0.7; }
+  .table-cards td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0 !important;
+    border: none !important;
+    border-bottom: 1px dashed #F0E8D8 !important;
+    text-align: left;
+    font-size: 0.95rem;
+    white-space: normal;
+  }
+  .table-cards td:last-child { border-bottom: none !important; }
+  .table-cards td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: var(--gold-dark);
+    font-size: 0.82rem;
+    flex-shrink: 0;
+  }
+  .table-cards tr:hover td { background: transparent !important; }
+  /* عنوان الكارت (اسم الكنيسة) فوق وبعرض كامل */
+  .table-cards td.td-title {
+    display: block;
+    border-bottom: 2px solid var(--gold-light) !important;
+    margin-bottom: 4px;
+    padding-bottom: 8px !important;
+  }
+  .table-cards td.td-title::before { content: none; }
+  .table-cards td.td-title .fw-700 { font-size: 1.12rem !important; }
+  /* صف الأزرار */
+  .table-cards td.td-actions {
+    display: block;
+    padding-top: 12px !important;
+    border-bottom: none !important;
+  }
+  .table-cards td.td-actions::before { content: none; }
+  .table-cards td.td-actions .d-flex { justify-content: flex-start; flex-wrap: wrap; gap: 8px !important; }
+  .table-cards td.td-actions .btn { width: 42px; height: 38px; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .table-cards td.td-actions form { margin: 0; }
 }
 
 /* الهواتف الصغيرة */
 @media (max-width: 576px) {
-  body { font-size: 14px; }
+  body { font-size: 15px; }
+  /* خط 16px لمنع تكبير الشاشة تلقائياً عند الكتابة في iOS */
+  .form-control, .form-select { font-size: 16px; padding: 12px 14px; }
   .container-fluid.py-4.px-4 { padding-left: 12px !important; padding-right: 12px !important; }
-  .page-title { font-size: 1.15rem; }
-  .stat-num { font-size: 1.7rem; }
-  .stat-icon-wrap { width: 46px; height: 46px; font-size: 1.2rem; }
+  .page-title { font-size: 1.18rem; }
+  .stat-num { font-size: 1.75rem; }
+  .stat-card .card-body { padding: 16px 8px !important; }
+  .stat-icon-wrap { width: 44px; height: 44px; font-size: 1.15rem; margin-bottom: 8px; }
+  .stat-label { font-size: 0.74rem; }
   .brand-sub { display: none; }
+  .brand-main { font-size: 0.92rem; }
+  /* أزرار أكبر للمس */
+  .btn { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; }
+  .btn-sm { min-height: 36px; }
   /* تكديس حقول الإيصال رأسياً بدل عمودين */
   .receipt-field { grid-template-columns: 1fr; gap: 2px; }
   .receipt-label { padding-top: 6px; }
   .receipt-header, .receipt-body { padding-left: 16px; padding-right: 16px; }
   .login-body, .login-header { padding-left: 20px; padding-right: 20px; }
   .public-card .public-card-body { padding: 18px 14px; }
-  /* أزرار رأس الصفحة تملأ العرض على الموبايل */
+  /* رأس الصفحة: العنوان فوق والأزرار تحت بعرض كامل */
+  .page-header { flex-direction: column; align-items: stretch; }
   .page-header > .d-flex { width: 100%; }
   .page-header > .d-flex .btn { flex: 1; }
+  /* روابط الفورمات بعرض مناسب */
+  .quick-links .btn { flex: 1 1 auto; }
 }
