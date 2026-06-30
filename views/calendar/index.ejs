@@ -1,0 +1,62 @@
+<%- include('../partials/head', { title: 'التقويم' }) %>
+<%- include('../partials/navbar') %>
+
+<div class="container-fluid py-4 px-4 fade-up">
+  <%- include('../partials/flash') %>
+
+  <div class="page-header">
+    <h1 class="page-title"><i class="bi bi-calendar3"></i>تقويم الحجوزات</h1>
+    <a href="/bookings" class="btn btn-outline-secondary rounded-pill px-4">
+      <i class="bi bi-list-ul me-1"></i>عرض القائمة
+    </a>
+  </div>
+
+  <!-- مفتاح الألوان -->
+  <div class="d-flex flex-wrap gap-3 mb-3 small">
+    <span><i class="bi bi-square-fill" style="color:#1565C0;"></i> خلوة جماعية</span>
+    <span><i class="bi bi-square-fill" style="color:#6A1B9A;"></i> خلوة فردية</span>
+    <span><i class="bi bi-square-fill" style="color:#2E7D32;"></i> يوم روحي</span>
+    <span><i class="bi bi-square-fill" style="color:#9E9E9E;"></i> ملغي</span>
+    <span class="text-muted">⏳ = في الانتظار</span>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <div id="calendar"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/locales/ar.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const el = document.getElementById('calendar');
+    const isMobile = window.innerWidth < 768;
+    const calendar = new FullCalendar.Calendar(el, {
+      locale: 'ar',
+      direction: 'rtl',
+      initialView: isMobile ? 'listMonth' : 'dayGridMonth',
+      height: 'auto',
+      headerToolbar: {
+        start: 'prev,next today',
+        center: 'title',
+        end: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+      },
+      buttonText: { today: 'النهاردة', month: 'شهر', week: 'أسبوع', day: 'يوم', list: 'قائمة' },
+      events: '/calendar/events',
+      eventDisplay: 'block',
+      displayEventTime: true,
+      nowIndicator: true,
+      dayMaxEvents: 3,
+      eventClick: function (info) {
+        info.jsEvent.preventDefault();
+        if (info.event.url) window.location.href = info.event.url;
+      }
+    });
+    calendar.render();
+  });
+</script>
+</body>
+</html>
