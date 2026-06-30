@@ -1,15 +1,45 @@
-const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
+const path = require('path');
 
-if (!process.env.DATABASE_URL) {
-  console.error('\n[!] DATABASE_URL غير موجود. أضف رابط قاعدة بيانات Postgres في متغيرات البيئة.\n');
+// اختيار قاعدة البيانات:
+//  - إن وُجد DATABASE_URL → Postgres حقيقي (Neon / Render / Vercel) كما هو في الإنتاج.
+//  - إن لم يوجد → قاعدة بيانات Postgres مدمجة محلياً (PGlite) للتطوير بدون أي إعداد.
+let pool;
+
+if (process.env.DATABASE_URL) {
+  const { Pool } = require('pg');
+  // Neon / Render / أغلب مزودي Postgres المُدارين يتطلبوا SSL
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.PGSSL === 'disable' ? false : { rejectUnauthorized: false },
+  });
+} else {
+  console.log('\n[i] DATABASE_URL غير موجود — يتم استخدام قاعدة بيانات Postgres مدمجة محلياً (PGlite) للتطوير.\n');
+  pool = createLocalPool();
 }
 
-// Neon / Render / أغلب مزودي Postgres المُدارين يتطلبوا SSL
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.PGSSL === 'disable' ? false : { rejectUnauthorized: false },
-});
+// غلاف متوافق مع واجهة pg.Pool فوق PGlite (embedded Postgres) — يوفّر query() مع rowCount.
+function createLocalPool() {
+  let dbPromise = null;
+  function getDb() {
+    if (!dbPromise) {
+      dbPromise = (async () => {
+        const { PGlite } = await import('@electric-sql/pglite');
+        const dataDir = process.env.PGLITE_DIR || path.join(__dirname, '.pglite-data');
+        return new PGlite(dataDir);
+      })();
+    }
+    return dbPromise;
+  }
+  return {
+    async query(text, params) {
+      const db = await getDb();
+      const res = await db.query(text, params || []);
+      // pg يعيد rowCount؛ PGlite يعيد affectedRows لعمليات DML — نوحّدهما.
+      return { rows: res.rows, rowCount: res.affectedRows != null ? res.affectedRows : res.rows.length };
+    },
+  };
+}
 
 // تحويل صف قاعدة البيانات لكائن الحجز المسطّح المستخدم في الواجهات
 function rowToBooking(row) {
