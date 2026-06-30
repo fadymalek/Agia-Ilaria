@@ -564,6 +564,52 @@ a:hover .stat-card { transform: translateY(-3px); }
 .bk-card.past { opacity: 0.72; }
 .booking-num { display: inline-block; }
 
+/* ===== التقويم (FullCalendar) بهوية الموقع الدهبية ===== */
+:root {
+  --fc-border-color: var(--border);
+  --fc-button-text-color: #fff;
+  --fc-button-bg-color: var(--gold-dark);
+  --fc-button-border-color: var(--gold-dark);
+  --fc-button-hover-bg-color: var(--gold-deeper);
+  --fc-button-hover-border-color: var(--gold-deeper);
+  --fc-button-active-bg-color: var(--gold-deeper);
+  --fc-button-active-border-color: var(--gold-deeper);
+  --fc-today-bg-color: rgba(196, 150, 58, 0.12);
+  --fc-now-indicator-color: #C0392B;
+  --fc-page-bg-color: var(--white);
+  --fc-list-event-hover-bg-color: var(--gold-light);
+}
+.fc { font-family: 'Tajawal', sans-serif; }
+.fc .fc-toolbar-title { color: var(--gold-deeper); font-weight: 800; font-size: 1.25rem; }
+.fc .fc-button {
+  font-family: 'Tajawal', sans-serif; font-weight: 700;
+  border-radius: var(--radius-sm) !important; box-shadow: none !important;
+  text-transform: none; padding: 7px 14px;
+}
+.fc .fc-button-primary { background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%); border: none; }
+.fc .fc-button-primary:hover { background: linear-gradient(135deg, var(--gold-dark), var(--gold-deeper)); }
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active { background: var(--gold-deeper); }
+.fc .fc-button-primary:focus, .fc .fc-button:focus { box-shadow: 0 0 0 0.2rem rgba(196,150,58,0.35) !important; }
+.fc .fc-button-primary:disabled { background: #C9B68A; border: none; }
+.fc .fc-col-header-cell { background: var(--cream); }
+.fc .fc-col-header-cell-cushion { color: var(--gold-dark); font-weight: 700; padding: 8px 4px; text-decoration: none; }
+.fc .fc-daygrid-day-number, .fc .fc-timegrid-axis-cushion, .fc .fc-timegrid-slot-label-cushion {
+  color: var(--text); text-decoration: none; font-weight: 600;
+}
+.fc .fc-day-today .fc-daygrid-day-number {
+  background: var(--gold); color: #fff; border-radius: 50%;
+  width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+  margin: 2px;
+}
+.fc .fc-event { border-radius: 6px; padding: 1px 5px; font-weight: 600; font-size: 0.8rem; cursor: pointer; }
+.fc .fc-daygrid-event:hover, .fc .fc-timegrid-event:hover { filter: brightness(1.08); }
+.fc-theme-standard .fc-list-day-cushion { background: var(--cream); color: var(--gold-dark); font-weight: 700; }
+.fc .fc-list-event-dot { border-color: currentColor; }
+.fc-toolbar.fc-header-toolbar { margin-bottom: 1rem; flex-wrap: wrap; gap: 10px; }
+.fc .fc-more-link { color: var(--gold-dark); font-weight: 700; }
+.fc a { text-decoration: none; }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 991px) {
   .stat-num { font-size: 2rem; }
@@ -632,4 +678,9 @@ a:hover .stat-card { transform: translateY(-3px); }
   .page-header > .d-flex .btn { flex: 1; }
   /* روابط الفورمات بعرض مناسب */
   .quick-links .btn { flex: 1 1 auto; }
+  /* التقويم على الموبايل */
+  .fc .fc-toolbar-title { font-size: 1.05rem; }
+  .fc .fc-button { padding: 6px 10px; font-size: 0.85rem; }
+  .fc-toolbar.fc-header-toolbar { justify-content: center; }
+  .fc .fc-toolbar-chunk { display: flex; justify-content: center; }
 }
