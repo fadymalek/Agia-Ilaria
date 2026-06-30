@@ -89,16 +89,16 @@ body {
 /* شعار الموقع على خلفية بيضاء عشان يبان فوق اللون الدهبي */
 .navbar-logo {
   display: inline-flex; align-items: center; justify-content: center;
-  background: #fff; border-radius: 10px; padding: 2px;
+  background: #fff; border-radius: 10px; padding: 3px;
   overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
-.navbar-logo img { height: 64px; width: auto; display: block; }
+.navbar-logo img { height: 60px; width: auto; display: block; }
 .login-logo-chip {
   display: inline-flex; align-items: center; justify-content: center;
-  background: #fff; border-radius: 18px; padding: 6px 10px;
+  background: #fff; border-radius: 18px; padding: 8px 14px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
-.login-logo-chip img { height: 140px; width: auto; display: block; }
+.login-logo-chip img { height: 165px; width: auto; display: block; }
 
 /* ===== CARDS ===== */
 .card {
