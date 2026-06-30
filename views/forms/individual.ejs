@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>استمارة حجز خلوة فردية - بيت القديسة ايلاريا</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); min-height: 100vh;">
+
+<div class="container py-5" style="max-width: 700px;">
+  <!-- Header -->
+  <div class="text-center mb-4">
+    <img src="/images/logo.png" height="80" alt="Logo" onerror="this.style.display='none'">
+    <div class="small text-muted mt-1">بطريركية الأقباط الأرثوذكس - قطاع غرب الاسكندرية</div>
+    <h5 class="fw-bold mt-2" style="color: var(--gold-dark);">بيت القديسة ايلاريا للخلوات الروحية للبنات</h5>
+    <span class="badge fs-6 text-white" style="background:#6A1B9A;">استمارة حجز خلوة فردية</span>
+  </div>
+
+  <% if (error) { %>
+    <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i><%= error %></div>
+  <% } %>
+
+  <div class="card border-0 shadow">
+    <div class="card-body p-4">
+      <form action="/forms/individual" method="POST">
+        <h6 class="fw-bold mb-3 pb-2 border-bottom" style="color: var(--gold-dark);">
+          <i class="bi bi-person-hearts me-2"></i>بيانات مقدّمة الطلب
+        </h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <label class="form-label required-label">الاسم</label>
+            <input type="text" class="form-control" name="church_name" required placeholder="الاسم بالكامل">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">الكنيسة التابعة لها</label>
+            <input type="text" class="form-control" name="sector_name" placeholder="كنيسة...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label required-label">تليفون للتواصل</label>
+            <input type="tel" class="form-control" name="priest_phone" dir="ltr" required placeholder="01XXXXXXXXX">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">الأب الروحي / الكاهن</label>
+            <input type="text" class="form-control" name="priest_name" placeholder="أبونا...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">السن / المرحلة</label>
+            <input type="text" class="form-control" name="age_group" placeholder="مثلاً: خدمة، شباب...">
+          </div>
+        </div>
+
+        <h6 class="fw-bold mb-3 pb-2 border-bottom" style="color: var(--gold-dark);">
+          <i class="bi bi-calendar me-2"></i>تفاصيل الإقامة
+        </h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label required-label">من تاريخ</label>
+            <input type="date" class="form-control" name="start_date" id="start_date" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label required-label">إلى تاريخ</label>
+            <input type="date" class="form-control" name="end_date" id="end_date" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">عدد الأيام</label>
+            <input type="number" class="form-control" name="num_days" min="1" id="num_days" placeholder="1">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">الدور المطلوب حجزه</label>
+            <select class="form-select" name="floor_number">
+              <option value="">اختر الدور</option>
+              <option value="الدور الأول">الدور الأول</option>
+              <option value="الدور الثاني">الدور الثاني</option>
+              <option value="الدور الثالث">الدور الثالث</option>
+            </select>
+          </div>
+        </div>
+
+        <h6 class="fw-bold mb-3 pb-2 border-bottom" style="color: var(--gold-dark);">
+          <i class="bi bi-cash-coin me-2"></i>البيانات المالية
+        </h6>
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <label class="form-label">إجمالي المبلغ (ج.م)</label>
+            <input type="number" class="form-control" name="total_amount" step="0.01" min="0" id="t" oninput="calcR()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">المبلغ المدفوع (ج.م)</label>
+            <input type="number" class="form-control" name="paid_amount" step="0.01" min="0" id="p" oninput="calcR()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">المبلغ المتبقي (ج.م)</label>
+            <input type="number" class="form-control bg-light" id="r" readonly>
+          </div>
+        </div>
+
+        <div class="mb-4 p-3 rounded" style="background: #faf3ff; border: 1px solid #e1bee7;">
+          <h6 class="fw-bold mb-2">إقرار</h6>
+          <p class="small text-muted mb-2">
+            أقر أنا ............... الموقع أدناه بأنني اطلعت على تعليمات البيت ومسؤل عن سلامته ونظافته والحفاظ على هدوئه طول أيام الإقامة.
+          </p>
+          <label class="form-label small">الاسم (للتوقيع)</label>
+          <input type="text" class="form-control" name="signature_name">
+        </div>
+
+        <button type="submit" class="btn w-100 py-3 fw-bold fs-5 text-white" style="background:#6A1B9A;">
+          <i class="bi bi-send me-2"></i>إرسال طلب الحجز
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function calcR() {
+  const t = parseFloat(document.getElementById('t').value) || 0;
+  const p = parseFloat(document.getElementById('p').value) || 0;
+  document.getElementById('r').value = (t - p).toFixed(2);
+}
+const s = document.getElementById('start_date');
+const e = document.getElementById('end_date');
+const d = document.getElementById('num_days');
+function calcDays() {
+  if (s.value && e.value) {
+    const diff = (new Date(e.value) - new Date(s.value)) / 86400000;
+    if (diff > 0) d.value = diff;
+  }
+}
+s.addEventListener('change', calcDays);
+e.addEventListener('change', calcDays);
+</script>
+</body>
+</html>
