@@ -146,6 +146,38 @@ body {
 }
 .stat-label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
 
+/* ===== METRIC CARDS (لوحة الإحصائيات العصرية) ===== */
+.metric-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 18px;
+  height: 100%;
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-xs);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.metric-card::before {
+  content: ''; position: absolute; inset-block: 0; inset-inline-start: 0;
+  width: 5px; background: var(--mc);
+}
+a:hover .metric-card, .metric-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow);
+  border-color: color-mix(in srgb, var(--mc) 35%, var(--border));
+}
+.metric-icon {
+  width: 54px; height: 54px; flex-shrink: 0;
+  border-radius: 15px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--mcbg); color: var(--mc);
+  font-size: 1.55rem;
+}
+.metric-body { min-width: 0; line-height: 1.15; }
+.metric-num { font-size: 2.1rem; font-weight: 800; color: var(--mc); letter-spacing: -0.5px; }
+.metric-label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 /* ===== BUTTONS ===== */
 .btn {
   font-family: 'Tajawal', sans-serif;
@@ -749,10 +781,10 @@ a:hover .stat-card { transform: translateY(-3px); }
   .form-control, .form-select { font-size: 16px; padding: 12px 14px; }
   .container-fluid.py-4.px-4 { padding-left: 12px !important; padding-right: 12px !important; }
   .page-title { font-size: 1.18rem; }
-  .stat-num { font-size: 1.75rem; }
-  .stat-card .card-body { padding: 16px 8px !important; }
-  .stat-icon-wrap { width: 44px; height: 44px; font-size: 1.15rem; margin-bottom: 8px; }
-  .stat-label { font-size: 0.74rem; }
+  .metric-card { padding: 12px 12px; gap: 10px; border-radius: 15px; }
+  .metric-icon { width: 44px; height: 44px; font-size: 1.25rem; border-radius: 12px; }
+  .metric-num { font-size: 1.6rem; }
+  .metric-label { font-size: 0.72rem; }
   .brand-sub { display: none; }
   .brand-main { font-size: 0.92rem; }
   /* أزرار أكبر للمس */

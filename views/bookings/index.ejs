@@ -45,81 +45,56 @@
   <!-- Stats -->
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-4 col-lg">
-      <div class="card stat-card">
-        <div class="stat-accent" style="background:linear-gradient(90deg,#C4963A,#8B6914);"></div>
-        <div class="card-body text-center py-4">
-          <div class="stat-icon-wrap mx-auto" style="background:#FFF3E0;">
-            <i class="bi bi-calendar3" style="color:#C4963A;"></i>
-          </div>
-          <div class="stat-num" style="background:linear-gradient(135deg,#C4963A,#8B6914);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-            <%= stats.total %>
-          </div>
-          <div class="stat-label">إجمالي الحجوزات</div>
+      <div class="metric-card" style="--mc:#C4963A;--mcbg:#FBEEDD;">
+        <div class="metric-icon"><i class="bi bi-calendar3"></i></div>
+        <div class="metric-body">
+          <div class="metric-num"><%= stats.total %></div>
+          <div class="metric-label">إجمالي الحجوزات</div>
         </div>
       </div>
     </div>
     <div class="col-6 col-md-4 col-lg">
-      <a href="/bookings?type=retreat" class="text-decoration-none">
-      <div class="card stat-card">
-        <div class="stat-accent" style="background:linear-gradient(90deg,#107C77,#0B5C58);"></div>
-        <div class="card-body text-center py-4">
-          <div class="stat-icon-wrap mx-auto" style="background:#D7EFED;">
-            <i class="bi bi-moon-stars-fill" style="color:#107C77;"></i>
+      <a href="/bookings?type=retreat" class="text-decoration-none d-block h-100">
+        <div class="metric-card" style="--mc:#107C77;--mcbg:#D7EFED;">
+          <div class="metric-icon"><i class="bi bi-moon-stars-fill"></i></div>
+          <div class="metric-body">
+            <div class="metric-num"><%= stats.retreat %></div>
+            <div class="metric-label">خلوات جماعية</div>
           </div>
-          <div class="stat-num" style="background:linear-gradient(135deg,#107C77,#0B5C58);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-            <%= stats.retreat %>
-          </div>
-          <div class="stat-label">خلوات جماعية</div>
         </div>
-      </div>
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg">
-      <a href="/bookings?type=individual_retreat" class="text-decoration-none">
-      <div class="card stat-card">
-        <div class="stat-accent" style="background:linear-gradient(90deg,#9A4C6D,#763A53);"></div>
-        <div class="card-body text-center py-4">
-          <div class="stat-icon-wrap mx-auto" style="background:#F5E3EB;">
-            <i class="bi bi-person-hearts" style="color:#9A4C6D;"></i>
+      <a href="/bookings?type=individual_retreat" class="text-decoration-none d-block h-100">
+        <div class="metric-card" style="--mc:#9A4C6D;--mcbg:#F5E3EB;">
+          <div class="metric-icon"><i class="bi bi-person-hearts"></i></div>
+          <div class="metric-body">
+            <div class="metric-num"><%= stats.individual %></div>
+            <div class="metric-label">خلوات فردية</div>
           </div>
-          <div class="stat-num" style="background:linear-gradient(135deg,#9A4C6D,#763A53);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-            <%= stats.individual %>
-          </div>
-          <div class="stat-label">خلوات فردية</div>
         </div>
-      </div>
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg">
-      <a href="/bookings?type=spiritual_day" class="text-decoration-none">
-      <div class="card stat-card">
-        <div class="stat-accent" style="background:linear-gradient(90deg,#5E7D2E,#465E22);"></div>
-        <div class="card-body text-center py-4">
-          <div class="stat-icon-wrap mx-auto" style="background:#E8EFD7;">
-            <i class="bi bi-brightness-high-fill" style="color:#5E7D2E;"></i>
+      <a href="/bookings?type=spiritual_day" class="text-decoration-none d-block h-100">
+        <div class="metric-card" style="--mc:#5E7D2E;--mcbg:#E8EFD7;">
+          <div class="metric-icon"><i class="bi bi-brightness-high-fill"></i></div>
+          <div class="metric-body">
+            <div class="metric-num"><%= stats.spiritual %></div>
+            <div class="metric-label">أيام روحية</div>
           </div>
-          <div class="stat-num" style="background:linear-gradient(135deg,#5E7D2E,#465E22);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-            <%= stats.spiritual %>
-          </div>
-          <div class="stat-label">أيام روحية</div>
         </div>
-      </div>
       </a>
     </div>
     <div class="col-6 col-md-4 col-lg">
-      <a href="/bookings?status=pending" class="text-decoration-none">
-      <div class="card stat-card">
-        <div class="stat-accent" style="background:linear-gradient(90deg,#F57F17,#E65100);"></div>
-        <div class="card-body text-center py-4">
-          <div class="stat-icon-wrap mx-auto" style="background:#FFF8E1;">
-            <i class="bi bi-clock-history" style="color:#F57F17;"></i>
+      <a href="/bookings?status=pending" class="text-decoration-none d-block h-100">
+        <div class="metric-card" style="--mc:#D98324;--mcbg:#FBEBD7;">
+          <div class="metric-icon"><i class="bi bi-hourglass-split"></i></div>
+          <div class="metric-body">
+            <div class="metric-num"><%= stats.pending %></div>
+            <div class="metric-label">في الانتظار</div>
           </div>
-          <div class="stat-num" style="background:linear-gradient(135deg,#F57F17,#E65100);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-            <%= stats.pending %>
-          </div>
-          <div class="stat-label">في الانتظار</div>
         </div>
-      </div>
       </a>
     </div>
   </div>
