@@ -20,9 +20,14 @@
     <span class="text-muted">⏳ = في الانتظار</span>
   </div>
 
+  <div class="text-muted small mb-2 d-md-none">
+    <i class="bi bi-arrows-move me-1"></i>اسحب التقويم يمين/شمال لرؤية باقي الأيام
+  </div>
   <div class="card">
     <div class="card-body p-2 p-md-3">
-      <div id="calendar" style="min-height:520px;"></div>
+      <div class="calendar-scroll">
+        <div id="calendar" style="min-height:520px;"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -48,7 +53,7 @@
     const calendar = new FullCalendar.Calendar(el, {
       locale: 'ar',
       direction: 'rtl',
-      initialView: isSmall() ? 'listMonth' : 'dayGridMonth',
+      initialView: 'dayGridMonth',
       height: 'auto',
       expandRows: true,
       headerToolbar: toolbarFor(isSmall()),
@@ -58,7 +63,7 @@
       eventDisplay: 'block',
       displayEventTime: true,
       nowIndicator: true,
-      dayMaxEvents: isSmall() ? 2 : 4,
+      dayMaxEvents: 4,
       fixedWeekCount: false,
       eventClick: function (info) {
         info.jsEvent.preventDefault();
@@ -67,14 +72,13 @@
     });
     calendar.render();
 
-    // التبديل بين القائمة (موبايل) وعرض الشهر (ديسكتوب) حسب حجم الشاشة
+    // شريط أدوات متجاوب حسب حجم الشاشة
     let small = isSmall();
     window.addEventListener('resize', function () {
       if (isSmall() !== small) {
         small = isSmall();
         calendar.setOption('headerToolbar', toolbarFor(small));
-        calendar.setOption('dayMaxEvents', small ? 2 : 4);
-        calendar.changeView(small ? 'listMonth' : 'dayGridMonth');
+        calendar.updateSize();
       }
     });
   });
