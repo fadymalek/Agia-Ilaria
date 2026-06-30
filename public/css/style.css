@@ -677,6 +677,14 @@ a:hover .stat-card { transform: translateY(-3px); }
   .fc .fc-toolbar-title { font-size: 1rem; }
   .fc .fc-button { padding: 5px 9px; font-size: 0.8rem; }
   .fc .fc-toolbar.fc-header-toolbar { gap: 8px; }
+
+  /* مسافة أوضح بين أعمدة الأيام في عرض الأسبوع (بدون سحب) */
+  .fc .fc-timegrid-col-events { margin-inline: 3px; }
+  .fc .fc-timegrid-event { padding: 1px 3px; border-radius: 5px; font-size: 0.66rem; }
+  .fc-theme-standard .fc-timegrid-col { border-inline-start: 2px solid #E7D9BE; }
+  .fc-theme-standard .fc-col-header-cell { border-inline-start: 2px solid #E7D9BE; }
+  .fc .fc-timegrid-axis, .fc .fc-timegrid-slot-label { font-size: 0.66rem; }
+  .fc .fc-col-header-cell-cushion { padding: 6px 1px; }
 }
 
 /* ===== RESPONSIVE ===== */
