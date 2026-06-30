@@ -30,13 +30,13 @@
   <div class="page-header">
     <h1 class="page-title"><i class="bi bi-calendar-check"></i>لوحة الحجوزات</h1>
     <div class="d-flex gap-2 flex-wrap">
-      <a href="/bookings/new?type=retreat" class="btn btn-primary rounded-pill px-4">
+      <a href="/bookings/new?type=retreat" class="btn rounded-pill px-4 text-white" style="background:#107C77;">
         <i class="bi bi-moon-stars-fill me-1"></i>خلوة جماعية
       </a>
-      <a href="/bookings/new?type=individual_retreat" class="btn rounded-pill px-4 text-white" style="background:#6A1B9A;">
+      <a href="/bookings/new?type=individual_retreat" class="btn rounded-pill px-4 text-white" style="background:#9A4C6D;">
         <i class="bi bi-person-hearts me-1"></i>خلوة فردية
       </a>
-      <a href="/bookings/new?type=spiritual_day" class="btn btn-success rounded-pill px-4">
+      <a href="/bookings/new?type=spiritual_day" class="btn rounded-pill px-4 text-white" style="background:#5E7D2E;">
         <i class="bi bi-brightness-high-fill me-1"></i>يوم روحي
       </a>
     </div>
@@ -61,12 +61,12 @@
     <div class="col-6 col-md-4 col-lg">
       <a href="/bookings?type=retreat" class="text-decoration-none">
       <div class="card stat-card">
-        <div class="stat-accent" style="background:linear-gradient(90deg,#1565C0,#0D47A1);"></div>
+        <div class="stat-accent" style="background:linear-gradient(90deg,#107C77,#0B5C58);"></div>
         <div class="card-body text-center py-4">
-          <div class="stat-icon-wrap mx-auto" style="background:#E3F2FD;">
-            <i class="bi bi-moon-stars-fill" style="color:#1565C0;"></i>
+          <div class="stat-icon-wrap mx-auto" style="background:#D7EFED;">
+            <i class="bi bi-moon-stars-fill" style="color:#107C77;"></i>
           </div>
-          <div class="stat-num" style="background:linear-gradient(135deg,#1565C0,#0D47A1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+          <div class="stat-num" style="background:linear-gradient(135deg,#107C77,#0B5C58);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
             <%= stats.retreat %>
           </div>
           <div class="stat-label">خلوات جماعية</div>
@@ -77,12 +77,12 @@
     <div class="col-6 col-md-4 col-lg">
       <a href="/bookings?type=individual_retreat" class="text-decoration-none">
       <div class="card stat-card">
-        <div class="stat-accent" style="background:linear-gradient(90deg,#6A1B9A,#4A148C);"></div>
+        <div class="stat-accent" style="background:linear-gradient(90deg,#9A4C6D,#763A53);"></div>
         <div class="card-body text-center py-4">
-          <div class="stat-icon-wrap mx-auto" style="background:#F3E5F5;">
-            <i class="bi bi-person-hearts" style="color:#6A1B9A;"></i>
+          <div class="stat-icon-wrap mx-auto" style="background:#F5E3EB;">
+            <i class="bi bi-person-hearts" style="color:#9A4C6D;"></i>
           </div>
-          <div class="stat-num" style="background:linear-gradient(135deg,#6A1B9A,#4A148C);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+          <div class="stat-num" style="background:linear-gradient(135deg,#9A4C6D,#763A53);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
             <%= stats.individual %>
           </div>
           <div class="stat-label">خلوات فردية</div>
@@ -93,12 +93,12 @@
     <div class="col-6 col-md-4 col-lg">
       <a href="/bookings?type=spiritual_day" class="text-decoration-none">
       <div class="card stat-card">
-        <div class="stat-accent" style="background:linear-gradient(90deg,#2E7D32,#1B5E20);"></div>
+        <div class="stat-accent" style="background:linear-gradient(90deg,#5E7D2E,#465E22);"></div>
         <div class="card-body text-center py-4">
-          <div class="stat-icon-wrap mx-auto" style="background:#E8F5E9;">
-            <i class="bi bi-brightness-high-fill" style="color:#2E7D32;"></i>
+          <div class="stat-icon-wrap mx-auto" style="background:#E8EFD7;">
+            <i class="bi bi-brightness-high-fill" style="color:#5E7D2E;"></i>
           </div>
-          <div class="stat-num" style="background:linear-gradient(135deg,#2E7D32,#1B5E20);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+          <div class="stat-num" style="background:linear-gradient(135deg,#5E7D2E,#465E22);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
             <%= stats.spiritual %>
           </div>
           <div class="stat-label">أيام روحية</div>
@@ -178,7 +178,7 @@
     <a href="/forms/retreat" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
       <i class="bi bi-moon-stars me-1"></i>فورم خلوة جماعية
     </a>
-    <a href="/forms/individual" target="_blank" class="btn btn-sm rounded-pill px-3" style="border:1px solid #6A1B9A;color:#6A1B9A;">
+    <a href="/forms/individual" target="_blank" class="btn btn-sm rounded-pill px-3" style="border:1px solid #9A4C6D;color:#9A4C6D;">
       <i class="bi bi-person-hearts me-1"></i>فورم خلوة فردية
     </a>
     <a href="/forms/spiritual-day" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3">

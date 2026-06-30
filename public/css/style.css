@@ -404,8 +404,8 @@ body {
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg) !important;
 }
-.type-selector-card.retreat:hover { border-color: #1565C0 !important; }
-.type-selector-card.spiritual:hover { border-color: #2E7D32 !important; }
+.type-selector-card.retreat:hover { border-color: #107C77 !important; }
+.type-selector-card.spiritual:hover { border-color: #5E7D2E !important; }
 .type-icon-bg {
   width: 80px; height: 80px;
   border-radius: 50%;
