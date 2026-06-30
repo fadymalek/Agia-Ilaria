@@ -4,6 +4,20 @@
 <div class="container-fluid py-4 px-4 fade-up">
   <%- include('../partials/flash') %>
 
+  <!-- Alerts: today + pending -->
+  <% if (typeof todayCount !== 'undefined' && todayCount > 0) { %>
+    <div class="alert d-flex align-items-center gap-2 border-0 shadow-sm" style="background:#FFF8E1;color:#8B6914;border-right:5px solid var(--gold) !important;">
+      <i class="bi bi-bell-fill fs-5" style="color:var(--gold);"></i>
+      <div class="fw-700">عندك <%= todayCount %> حجز عليه الدور النهاردة 👇</div>
+    </div>
+  <% } %>
+  <% if (typeof pendingCount !== 'undefined' && pendingCount > 0) { %>
+    <a href="/bookings?status=pending" class="alert d-flex align-items-center gap-2 border-0 shadow-sm text-decoration-none" style="background:#FFF3E0;color:#E65100;border-right:5px solid #F57F17 !important;">
+      <i class="bi bi-hourglass-split fs-5" style="color:#F57F17;"></i>
+      <div class="fw-700">عندك <%= pendingCount %> طلب حجز في انتظار الموافقة — اضغط للمراجعة</div>
+    </a>
+  <% } %>
+
   <!-- Page Header -->
   <div class="page-header">
     <h1 class="page-title"><i class="bi bi-calendar-check"></i>لوحة الحجوزات</h1>
@@ -19,7 +33,7 @@
 
   <!-- Stats -->
   <div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3">
+    <div class="col-6 col-md-4 col-lg">
       <div class="card stat-card">
         <div class="stat-accent" style="background:linear-gradient(90deg,#C4963A,#8B6914);"></div>
         <div class="card-body text-center py-4">
@@ -33,7 +47,8 @@
         </div>
       </div>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="col-6 col-md-4 col-lg">
+      <a href="/bookings?type=retreat" class="text-decoration-none">
       <div class="card stat-card">
         <div class="stat-accent" style="background:linear-gradient(90deg,#1565C0,#0D47A1);"></div>
         <div class="card-body text-center py-4">
@@ -43,11 +58,29 @@
           <div class="stat-num" style="background:linear-gradient(135deg,#1565C0,#0D47A1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
             <%= stats.retreat %>
           </div>
-          <div class="stat-label">خلوات روحية</div>
+          <div class="stat-label">خلوات جماعية</div>
         </div>
       </div>
+      </a>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="col-6 col-md-4 col-lg">
+      <a href="/bookings?type=individual_retreat" class="text-decoration-none">
+      <div class="card stat-card">
+        <div class="stat-accent" style="background:linear-gradient(90deg,#6A1B9A,#4A148C);"></div>
+        <div class="card-body text-center py-4">
+          <div class="stat-icon-wrap mx-auto" style="background:#F3E5F5;">
+            <i class="bi bi-person-hearts" style="color:#6A1B9A;"></i>
+          </div>
+          <div class="stat-num" style="background:linear-gradient(135deg,#6A1B9A,#4A148C);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+            <%= stats.individual %>
+          </div>
+          <div class="stat-label">خلوات فردية</div>
+        </div>
+      </div>
+      </a>
+    </div>
+    <div class="col-6 col-md-4 col-lg">
+      <a href="/bookings?type=spiritual_day" class="text-decoration-none">
       <div class="card stat-card">
         <div class="stat-accent" style="background:linear-gradient(90deg,#2E7D32,#1B5E20);"></div>
         <div class="card-body text-center py-4">
@@ -60,8 +93,10 @@
           <div class="stat-label">أيام روحية</div>
         </div>
       </div>
+      </a>
     </div>
-    <div class="col-6 col-lg-3">
+    <div class="col-6 col-md-4 col-lg">
+      <a href="/bookings?status=pending" class="text-decoration-none">
       <div class="card stat-card">
         <div class="stat-accent" style="background:linear-gradient(90deg,#F57F17,#E65100);"></div>
         <div class="card-body text-center py-4">
@@ -74,6 +109,7 @@
           <div class="stat-label">في الانتظار</div>
         </div>
       </div>
+      </a>
     </div>
   </div>
 
@@ -93,7 +129,8 @@
           <label class="form-label">النوع</label>
           <select class="form-select" name="type">
             <option value="">الكل</option>
-            <option value="retreat" <%= query.type==='retreat'?'selected':'' %>>خلوة</option>
+            <option value="retreat" <%= query.type==='retreat'?'selected':'' %>>خلوة جماعية</option>
+            <option value="individual_retreat" <%= query.type==='individual_retreat'?'selected':'' %>>خلوة فردية</option>
             <option value="spiritual_day" <%= query.type==='spiritual_day'?'selected':'' %>>يوم روحي</option>
           </select>
         </div>
@@ -167,7 +204,7 @@
           </thead>
           <tbody>
             <% bookings.forEach(b => { %>
-            <tr>
+            <tr class="<%= b._when==='today' ? 'row-today' : (b._when==='past' ? 'row-past' : '') %>">
               <td class="pe-3">
                 <span class="booking-num"><%= b.booking_number %></span>
                 <% if (b.source === 'form') { %>
@@ -175,32 +212,34 @@
                 <% } %>
               </td>
               <td>
-                <div class="fw-700" style="font-size:0.9rem;"><%= b.church_name %></div>
-                <% if (b.sector_name) { %><div class="text-muted" style="font-size:0.76rem;"><%= b.sector_name %></div><% } %>
+                <div class="fw-700" style="font-size:1rem;"><%= b.church_name %></div>
+                <% if (b.sector_name) { %><div class="text-muted" style="font-size:0.82rem;"><%= b.sector_name %></div><% } %>
               </td>
               <td>
-                <% if (b.booking_type === 'retreat') { %>
-                  <span class="badge" style="background:#E3F2FD;color:#1565C0;">
-                    <i class="bi bi-moon-stars-fill me-1"></i>خلوة
-                  </span>
-                <% } else { %>
-                  <span class="badge" style="background:#E8F5E9;color:#2E7D32;">
-                    <i class="bi bi-brightness-high-fill me-1"></i>يوم روحي
-                  </span>
-                <% } %>
+                <% const ti = typeInfo(b.booking_type); %>
+                <span class="badge" style="background:<%= ti.bg %>;color:<%= ti.color %>;">
+                  <i class="bi <%= ti.icon %> me-1"></i><%= ti.label %>
+                </span>
               </td>
-              <td style="font-size:0.83rem;">
-                <% if (b.booking_type === 'retreat' && b.start_date) { %>
+              <td style="font-size:0.9rem;">
+                <% if (isStayType(b.booking_type) && b.start_date) { %>
                   <div><i class="bi bi-calendar2 me-1 text-muted"></i><%= b.start_date %></div>
                   <div class="text-muted"><i class="bi bi-arrow-left me-1"></i><%= b.end_date || '' %></div>
                 <% } else if (b.event_date) { %>
                   <div><i class="bi bi-calendar2 me-1 text-muted"></i><%= b.event_date %></div>
                   <% if (b.start_time) { %>
-                    <div class="text-muted" style="font-size:0.78rem;"><i class="bi bi-clock me-1"></i><%= b.start_time %>-<%= b.end_time||'' %></div>
+                    <div class="text-muted" style="font-size:0.82rem;"><i class="bi bi-clock me-1"></i><%= b.start_time %>-<%= b.end_time||'' %></div>
                   <% } %>
                 <% } else { %><span class="text-muted">-</span><% } %>
+                <% if (b._when === 'today') { %>
+                  <span class="badge mt-1 when-today"><i class="bi bi-bell-fill me-1"></i>النهاردة</span>
+                <% } else if (b._when === 'past') { %>
+                  <span class="badge mt-1 when-past"><i class="bi bi-check2-all me-1"></i>خلص</span>
+                <% } else if (b._when === 'upcoming') { %>
+                  <span class="badge mt-1 when-upcoming"><i class="bi bi-hourglass-top me-1"></i>قادم</span>
+                <% } %>
               </td>
-              <td style="font-size:0.87rem;"><%= b.priest_name || '-' %></td>
+              <td style="font-size:0.92rem;"><%= b.priest_name || '-' %></td>
               <td>
                 <% if (b.category) { %>
                   <span class="badge" style="background:var(--gold-light);color:var(--gold-dark);"><%= b.category %></span>
@@ -228,6 +267,19 @@
               </td>
               <td>
                 <div class="d-flex gap-1">
+                  <% if (b.status === 'pending') { %>
+                  <form action="/bookings/<%= b.id %>/approve" method="POST">
+                    <button type="submit" class="btn btn-sm btn-success rounded-pill px-2" title="موافقة">
+                      <i class="bi bi-check-lg"></i>
+                    </button>
+                  </form>
+                  <form action="/bookings/<%= b.id %>/reject" method="POST"
+                    onsubmit="return confirm('رفض طلب <%= b.church_name %>؟')">
+                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-2" title="رفض">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </form>
+                  <% } %>
                   <a href="/bookings/<%= b.id %>" class="btn btn-sm rounded-pill px-2" style="background:var(--gold-light);color:var(--gold-dark);" title="عرض">
                     <i class="bi bi-eye"></i>
                   </a>

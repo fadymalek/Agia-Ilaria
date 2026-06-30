@@ -1,9 +1,22 @@
 const express = require('express');
 const { bookings, generateBookingNumber } = require('../db');
+const { VALID_TYPES, cairoToday, bookingDate, bookingWhen } = require('../lib/helpers');
 const requireAuth = require('../middleware/requireAuth');
 const router = express.Router();
 
 const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
+
+// ترتيب: الجاري النهاردة أولاً، ثم القادم (الأقرب أولاً)، ثم المنتهي (الأحدث أولاً)
+const WHEN_ORDER = { today: 0, upcoming: 1, past: 2 };
+function compareBookings(a, b) {
+  const ga = WHEN_ORDER[a._when] ?? 3;
+  const gb = WHEN_ORDER[b._when] ?? 3;
+  if (ga !== gb) return ga - gb;
+  const da = bookingDate(a);
+  const db = bookingDate(b);
+  if (a._when === 'past') return db.localeCompare(da);
+  return da.localeCompare(db);
+}
 
 router.use(requireAuth);
 
@@ -61,21 +74,32 @@ router.get('/', wrap(async (req, res) => {
   if (from) list = list.filter(b => (b.start_date || b.event_date || '') >= from);
   if (to) list = list.filter(b => (b.end_date || b.event_date || b.start_date || '') <= to);
 
-  list = list.reverse();
+  // حالة التوقيت لكل حجز ثم الترتيب بالتواريخ
+  const today = cairoToday();
+  list.forEach(b => { b._when = bookingWhen(b, today); });
+  list.sort(compareBookings);
+
+  // حجوزات النهاردة (للتنبيه) + الطلبات المعلّقة
+  const todayList = list.filter(b => b._when === 'today');
+  const pendingList = all.filter(b => b.status === 'pending');
 
   const stats = {
     total: all.length,
     retreat: all.filter(b => b.booking_type === 'retreat').length,
+    individual: all.filter(b => b.booking_type === 'individual_retreat').length,
     spiritual: all.filter(b => b.booking_type === 'spiritual_day').length,
-    pending: all.filter(b => b.status === 'pending').length,
+    pending: pendingList.length,
   };
 
-  res.render('bookings/index', { bookings: list, stats, query: req.query });
+  res.render('bookings/index', {
+    bookings: list, stats, query: req.query,
+    todayCount: todayList.length, pendingCount: pendingList.length,
+  });
 }));
 
 router.get('/new', (req, res) => {
   const type = req.query.type;
-  if (!type || !['retreat', 'spiritual_day'].includes(type)) {
+  if (!type || !VALID_TYPES.includes(type)) {
     return res.render('bookings/select-type');
   }
   res.render('bookings/new', { type, booking: null });
@@ -116,6 +140,20 @@ router.delete('/:id', wrap(async (req, res) => {
   await bookings.remove(parseInt(req.params.id));
   req.flash('success', 'تم حذف الحجز');
   res.redirect('/bookings');
+}));
+
+// الموافقة على طلب (تأكيد)
+router.post('/:id/approve', wrap(async (req, res) => {
+  await bookings.update(parseInt(req.params.id), { status: 'confirmed', updated_at: new Date().toISOString() });
+  req.flash('success', 'تمت الموافقة على الطلب وتأكيد الحجز');
+  res.redirect(req.get('referer') || '/bookings');
+}));
+
+// رفض طلب (إلغاء)
+router.post('/:id/reject', wrap(async (req, res) => {
+  await bookings.update(parseInt(req.params.id), { status: 'cancelled', updated_at: new Date().toISOString() });
+  req.flash('success', 'تم رفض الطلب');
+  res.redirect(req.get('referer') || '/bookings');
 }));
 
 module.exports = router;

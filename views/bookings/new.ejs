@@ -11,13 +11,9 @@
     </a>
     <div>
       <h4 class="mb-0 fw-800">
-        <% if (type === 'retreat') { %>
-          <i class="bi bi-moon-stars-fill me-2" style="color:#1565C0;"></i>
-          <%= booking ? 'تعديل خلوة روحية' : 'حجز خلوة جديدة' %>
-        <% } else { %>
-          <i class="bi bi-brightness-high-fill me-2" style="color:#2E7D32;"></i>
-          <%= booking ? 'تعديل يوم روحي' : 'حجز يوم روحي جديد' %>
-        <% } %>
+        <% const ti = typeInfo(type); %>
+        <i class="bi <%= ti.icon %> me-2" style="color:<%= ti.color %>;"></i>
+        <%= (booking ? 'تعديل ' : 'حجز ') + ti.label %>
       </h4>
       <% if (booking) { %>
         <small class="text-muted">رقم الحجز: <strong class="booking-num"><%= booking.booking_number %></strong></small>
@@ -64,7 +60,7 @@
             </div>
           </div>
           <div class="col-md-6">
-            <label class="form-label"><%= type==='retreat' ? 'اسم مشرفة الخلوة' : 'اسم المشرف' %></label>
+            <label class="form-label"><%= isStayType(type) ? 'اسم مشرفة الخلوة' : 'اسم المشرف' %></label>
             <div class="input-group">
               <span class="input-group-text"><i class="bi bi-person-check"></i></span>
               <input type="text" class="form-control" name="supervisor_name"
@@ -88,11 +84,11 @@
       <div class="form-section-header">
         <div class="section-num">٢</div>
         <i class="bi bi-calendar-event" style="color:var(--gold);"></i>
-        تفاصيل <%= type==='retreat' ? 'الخلوة' : 'اليوم الروحي' %>
+        تفاصيل <%= isStayType(type) ? 'الخلوة' : 'اليوم الروحي' %>
       </div>
       <div class="form-section-body">
         <div class="row g-3">
-          <% if (type === 'retreat') { %>
+          <% if (isStayType(type)) { %>
             <div class="col-md-4">
               <label class="form-label required-label">تاريخ البداية</label>
               <input type="date" class="form-control" name="start_date" id="startDate" required

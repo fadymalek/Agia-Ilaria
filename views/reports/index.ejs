@@ -110,14 +110,11 @@
                 <td class="px-3 small font-monospace"><%= b.booking_number %></td>
                 <td class="fw-semibold"><%= b.church_name %></td>
                 <td>
-                  <% if (b.booking_type === 'retreat') { %>
-                    <span class="badge bg-primary-subtle text-primary">خلوة</span>
-                  <% } else { %>
-                    <span class="badge bg-success-subtle text-success">يوم روحي</span>
-                  <% } %>
+                  <% const ti = typeInfo(b.booking_type); %>
+                  <span class="badge" style="background:<%= ti.bg %>;color:<%= ti.color %>;"><%= ti.label %></span>
                 </td>
                 <td class="small">
-                  <% if (b.booking_type === 'retreat' && b.start_date) { %>
+                  <% if (isStayType(b.booking_type) && b.start_date) { %>
                     <%= b.start_date %><br><small class="text-muted">→ <%= b.end_date || '' %></small>
                   <% } else { %>
                     <%= b.event_date || '-' %>

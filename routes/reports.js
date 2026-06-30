@@ -35,6 +35,7 @@ router.get('/', wrap(async (req, res) => {
     paid_amount: list.reduce((s, b) => s + (b.paid_amount || 0), 0),
     remaining_amount: list.reduce((s, b) => s + (b.remaining_amount || 0), 0),
     retreat_count: list.filter(b => b.booking_type === 'retreat').length,
+    individual_count: list.filter(b => b.booking_type === 'individual_retreat').length,
     spiritual_count: list.filter(b => b.booking_type === 'spiritual_day').length,
     total_people: list.reduce((s, b) => s + (b.num_people || 0), 0),
   };

@@ -199,26 +199,47 @@ body {
 .table {
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.88rem;
+  font-size: 0.96rem;
+  color: var(--text);
 }
 .table thead th {
   background: var(--cream);
   color: var(--gold-dark);
-  font-weight: 700;
-  font-size: 0.81rem;
+  font-weight: 800;
+  font-size: 0.9rem;
   letter-spacing: 0.2px;
   border-bottom: 2px solid var(--border) !important;
   border-top: none !important;
-  padding: 12px 14px;
+  padding: 13px 14px;
   white-space: nowrap;
 }
 .table tbody tr { transition: background 0.15s; }
 .table tbody tr:hover td { background: #FBF5EA; }
 .table tbody td {
-  padding: 11px 14px;
+  padding: 12px 14px;
   border-bottom: 1px solid #F2EBE0 !important;
   border-top: none !important;
   vertical-align: middle;
+}
+
+/* ===== أدوات وزن الخط (غير معرّفة في Bootstrap) ===== */
+.fw-700 { font-weight: 700 !important; }
+.fw-800 { font-weight: 800 !important; }
+
+/* ===== حالة التوقيت: صفوف وشارات ===== */
+.table tbody tr.row-today td { background: #FFFBEA; box-shadow: inset 4px 0 0 var(--gold); }
+.table tbody tr.row-today:hover td { background: #FFF6D6; }
+.table tbody tr.row-past td { opacity: 0.62; }
+.table tbody tr.row-past:hover td { opacity: 0.85; }
+.badge.when-today {
+  background: var(--gold); color: #fff;
+  animation: todayPulse 1.6s ease-in-out infinite;
+}
+.badge.when-past { background: #ECEFF1; color: #607D8B; }
+.badge.when-upcoming { background: #E3F2FD; color: #1565C0; }
+@keyframes todayPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196,150,58,0.55); }
+  50% { box-shadow: 0 0 0 5px rgba(196,150,58,0); }
 }
 
 /* ===== BADGES ===== */

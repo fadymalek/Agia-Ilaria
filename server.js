@@ -7,8 +7,13 @@ const methodOverride = require('method-override');
 const path = require('path');
 
 const db = require('./db');
+const helpers = require('./lib/helpers');
 
 const app = express();
+
+// helpers متاحة لكل القوالب (EJS)
+app.locals.typeInfo = helpers.typeInfo;
+app.locals.isStayType = helpers.isStayType;
 
 // خلف بروكسي (Vercel / Render) لكي تعمل الكوكيز الآمنة بشكل صحيح
 app.set('trust proxy', 1);
