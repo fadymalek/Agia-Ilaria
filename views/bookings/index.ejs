@@ -26,6 +26,15 @@
     </a>
   <% } %>
 
+  <!-- تذكير النسخة الاحتياطية الأسبوعية -->
+  <div id="backupReminder" class="alert d-flex align-items-center gap-2 border-0 shadow-sm" style="display:none;background:#E7F5F4;color:#0B5C58;border-right:5px solid #107C77 !important;">
+    <i class="bi bi-shield-exclamation fs-5"></i>
+    <div class="fw-700 flex-grow-1">مر أسبوع على آخر نسخة احتياطية — يُفضّل تنزيل نسخة من الحجوزات الآن للأمان.</div>
+    <a href="/bookings/backup" id="backupNow" class="btn btn-sm rounded-pill px-3 text-white" style="background:#107C77;">
+      <i class="bi bi-download me-1"></i>تنزيل النسخة
+    </a>
+  </div>
+
   <!-- Page Header -->
   <div class="page-header">
     <h1 class="page-title"><i class="bi bi-calendar-check"></i>لوحة الحجوزات</h1>
@@ -147,28 +156,46 @@
     </div>
   </div>
 
-  <!-- Quick Links to public forms -->
+  <!-- روابط الفورمات للكنائس مع أزرار نسخ -->
+  <div class="card filter-card mb-3">
+    <div class="card-body py-2 px-3">
+      <div class="d-flex align-items-center gap-2 flex-wrap quick-links">
+        <small class="text-muted fw-semibold me-1"><i class="bi bi-share me-1"></i>روابط الحجز للكنائس:</small>
+        <div class="d-inline-flex align-items-center gap-1">
+          <a href="/forms/retreat" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+            <i class="bi bi-moon-stars me-1"></i>فورم خلوة جماعية
+          </a>
+          <button type="button" class="btn btn-sm btn-outline-primary rounded-pill copy-link" data-path="/forms/retreat">
+            <i class="bi bi-clipboard"></i> نسخ الرابط
+          </button>
+        </div>
+        <div class="d-inline-flex align-items-center gap-1">
+          <a href="/forms/spiritual-day" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3">
+            <i class="bi bi-sun me-1"></i>فورم يوم روحي
+          </a>
+          <button type="button" class="btn btn-sm btn-outline-success rounded-pill copy-link" data-path="/forms/spiritual-day">
+            <i class="bi bi-clipboard"></i> نسخ الرابط
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- أدوات -->
   <div class="d-flex align-items-center gap-2 mb-3 flex-wrap quick-links">
-    <small class="text-muted fw-semibold me-1"><i class="bi bi-share me-1"></i>روابط الحجز للكنائس:</small>
-    <a href="/forms/retreat" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-      <i class="bi bi-moon-stars me-1"></i>فورم خلوة جماعية
-    </a>
-    <a href="/forms/individual" target="_blank" class="btn btn-sm rounded-pill px-3" style="border:1px solid #9A4C6D;color:#9A4C6D;">
-      <i class="bi bi-person-hearts me-1"></i>فورم خلوة فردية
-    </a>
-    <a href="/forms/spiritual-day" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-3">
-      <i class="bi bi-sun me-1"></i>فورم يوم روحي
-    </a>
     <%
       const _qs = Object.entries(query || {}).filter(([k, v]) => v).map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&');
     %>
-    <a href="/bookings/export<%= _qs ? '?' + _qs : '' %>" class="btn btn-sm btn-success rounded-pill px-3 ms-auto">
+    <a href="/bookings/backup" id="backupBtn" class="btn btn-sm rounded-pill px-3 text-white" style="background:#107C77;">
+      <i class="bi bi-shield-check me-1"></i>نسخة احتياطية
+    </a>
+    <a href="/bookings/export<%= _qs ? '?' + _qs : '' %>" class="btn btn-sm btn-success rounded-pill px-3">
       <i class="bi bi-file-earmark-excel me-1"></i>تصدير Excel
     </a>
     <a href="/bookings/trash" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
       <i class="bi bi-trash3 me-1"></i>المحذوفات
     </a>
-    <a href="/reports" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+    <a href="/reports" class="btn btn-sm btn-outline-secondary rounded-pill px-3 ms-auto">
       <i class="bi bi-bar-chart-line me-1"></i>التقرير الأسبوعي
     </a>
   </div>
@@ -196,6 +223,7 @@
               <th>النوع</th>
               <th>التاريخ</th>
               <th>الكاهن</th>
+              <th>المشرفة</th>
               <th>الفئة</th>
               <th class="text-center">العدد</th>
               <th>المدفوع</th>
@@ -242,6 +270,7 @@
                 <% } %>
               </td>
               <td data-label="الكاهن" style="font-size:0.92rem;"><%= b.priest_name || '-' %></td>
+              <td data-label="المشرفة" style="font-size:0.92rem;"><%= b.supervisor_name || '-' %></td>
               <td data-label="الفئة">
                 <% if (b.category) { %>
                   <span class="badge" style="background:var(--gold-light);color:var(--gold-dark);"><%= b.category %></span>
@@ -356,6 +385,7 @@
           </span>
         </div>
         <div class="cell"><label>الكاهن</label><span class="val"><%= b.priest_name || '-' %></span></div>
+        <div class="cell"><label>المشرفة</label><span class="val"><%= b.supervisor_name || '-' %></span></div>
         <div class="cell"><label>الفئة</label><span class="val"><%= b.category || '-' %></span></div>
         <div class="cell"><label>العدد</label><span class="val"><%= b.num_people || 0 %></span></div>
         <div class="cell"><label>المدفوع</label><span class="val" style="color:#1B5E20;"><%= (b.paid_amount||0).toLocaleString() %> ج</span></div>
@@ -388,5 +418,41 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// نسخ روابط الفورمات للحافظة
+document.querySelectorAll('.copy-link').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const url = location.origin + btn.getAttribute('data-path');
+    try { await navigator.clipboard.writeText(url); }
+    catch (e) {
+      const t = document.createElement('textarea'); t.value = url;
+      document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); } catch (_) {}
+      t.remove();
+    }
+    const old = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-check2"></i> اتنسخ!';
+    btn.classList.add('btn-success', 'text-white');
+    setTimeout(() => { btn.innerHTML = old; btn.classList.remove('btn-success', 'text-white'); }, 1600);
+  });
+});
+
+// تذكير بنسخة احتياطية أسبوعية (تعتمد على المتصفح المحلي)
+(function () {
+  const KEY = 'hilaria_last_backup';
+  const WEEK = 7 * 24 * 60 * 60 * 1000;
+  const last = parseInt(localStorage.getItem(KEY) || '0', 10);
+  const reminder = document.getElementById('backupReminder');
+  if (reminder && (!last || (Date.now() - last) > WEEK)) reminder.style.display = 'flex';
+  function markDone() {
+    localStorage.setItem(KEY, String(Date.now()));
+    if (reminder) reminder.style.display = 'none';
+  }
+  ['backupBtn', 'backupNow'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', markDone);
+  });
+})();
+</script>
 </body>
 </html>

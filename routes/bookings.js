@@ -42,10 +42,25 @@ function compareBookings(a, b) {
 
 router.use(requireAuth);
 
+// الخلوة الفردية: كل فرد له بياناته الخاصة + المشرفة المسؤولة عنه
+function parsePersons(data) {
+  if (!data.persons) return [];
+  const arr = Array.isArray(data.persons) ? data.persons : Object.values(data.persons);
+  return arr
+    .filter(p => p && (p.name || '').trim())
+    .map(p => ({
+      name: (p.name || '').trim(),
+      phone: (p.phone || '').trim() || null,
+      church: (p.church || '').trim() || null,
+      age: (p.age || '').trim() || null,
+      supervisor: (p.supervisor || '').trim() || null,
+    }));
+}
+
 function buildBooking(data, extra = {}) {
   const paid = parseFloat(data.paid_amount) || 0;
   const total = parseFloat(data.total_amount) || 0;
-  return {
+  const result = {
     booking_type: data.booking_type,
     status: data.status || 'confirmed',
     sector_name: data.sector_name || null,
@@ -73,8 +88,15 @@ function buildBooking(data, extra = {}) {
     notes: data.notes || null,
     signature_name: data.signature_name || null,
     updated_at: new Date().toISOString(),
-    ...extra
   };
+
+  if (data.booking_type === 'individual_retreat') {
+    const persons = parsePersons(data);
+    result.persons = persons;
+    result.num_people = persons.length;
+  }
+
+  return { ...result, ...extra };
 }
 
 router.get('/', wrap(async (req, res) => {
@@ -130,6 +152,7 @@ router.get('/export', wrap(async (req, res) => {
     { header: 'إلى تاريخ', key: 'end', width: 13 },
     { header: 'الكاهن', key: 'priest', width: 18 },
     { header: 'تليفون الكاهن', key: 'priest_phone', width: 15 },
+    { header: 'المشرفة المسؤولة', key: 'supervisor', width: 18 },
     { header: 'العدد', key: 'people', width: 8 },
     { header: 'الإجمالي', key: 'total', width: 12 },
     { header: 'المدفوع', key: 'paid', width: 12 },
@@ -146,7 +169,7 @@ router.get('/export', wrap(async (req, res) => {
     num: b.booking_number, church: b.church_name || '', sector: b.sector_name || '',
     type: typeInfo(b.booking_type).label, category: b.category || '',
     start: b.start_date || b.event_date || '', end: b.end_date || '',
-    priest: b.priest_name || '', priest_phone: b.priest_phone || '',
+    priest: b.priest_name || '', priest_phone: b.priest_phone || '', supervisor: b.supervisor_name || '',
     people: b.num_people || 0, total: b.total_amount || 0, paid: b.paid_amount || 0,
     remaining: b.remaining_amount || 0, status: STATUS_LABEL[b.status] || b.status || '', notes: b.notes || '',
   }));
@@ -162,6 +185,23 @@ router.get('/export', wrap(async (req, res) => {
 router.get('/trash', wrap(async (req, res) => {
   const deleted = await bookings.findDeleted();
   res.render('bookings/trash', { bookings: deleted });
+}));
+
+// نسخة احتياطية كاملة (JSON) بكل الحقول والتفاصيل — للحفظ المحلي عند المستخدم
+router.get('/backup', wrap(async (req, res) => {
+  const active = await bookings.findAll();
+  const deleted = await bookings.findDeleted();
+  const payload = {
+    app: 'بيت القديسة ايلاريا',
+    exported_at: new Date().toISOString(),
+    active_count: active.length,
+    deleted_count: deleted.length,
+    bookings: active,
+    deleted_bookings: deleted,
+  };
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename="hilaria-backup-${cairoToday()}.json"`);
+  res.send(JSON.stringify(payload, null, 2));
 }));
 
 router.post('/', wrap(async (req, res) => {

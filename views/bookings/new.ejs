@@ -24,71 +24,30 @@
   <form action="<%= booking ? '/bookings/'+booking.id+'?_method=PUT' : '/bookings' %>" method="POST">
     <input type="hidden" name="booking_type" value="<%= type %>">
 
-    <!-- Section 1: Church Info -->
-    <div class="form-section">
-      <div class="form-section-header">
-        <div class="section-num">١</div>
-        <i class="bi bi-building" style="color:var(--gold);"></i>
-        بيانات الكنيسة
-      </div>
-      <div class="form-section-body">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label required-label">اسم الكنيسة</label>
-            <input type="text" class="form-control" name="church_name" required
-              value="<%= booking ? booking.church_name : '' %>" placeholder="كنيسة القديس...">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">اسم القطاع</label>
-            <input type="text" class="form-control" name="sector_name"
-              value="<%= booking ? booking.sector_name||'' : '' %>" placeholder="قطاع غرب الاسكندرية...">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">الكاهن المسؤل</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-              <input type="text" class="form-control" name="priest_name"
-                value="<%= booking ? booking.priest_name||'' : '' %>" placeholder="أبونا...">
-            </div>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">تليفون الكاهن</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-phone"></i></span>
-              <input type="tel" class="form-control" name="priest_phone" dir="ltr"
-                value="<%= booking ? booking.priest_phone||'' : '' %>" placeholder="01XXXXXXXXX">
-            </div>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label"><%= isStayType(type) ? 'اسم مشرفة الخلوة' : 'اسم المشرف' %></label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-person-check"></i></span>
-              <input type="text" class="form-control" name="supervisor_name"
-                value="<%= booking ? booking.supervisor_name||'' : '' %>">
-            </div>
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">تليفون المشرف</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-phone"></i></span>
-              <input type="tel" class="form-control" name="supervisor_phone" dir="ltr"
-                value="<%= booking ? booking.supervisor_phone||'' : '' %>" placeholder="01XXXXXXXXX">
-            </div>
-          </div>
+    <% if (type === 'individual_retreat') { %>
+      <!-- ===================== خلوة فردية (بيانات لكل فرد) ===================== -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="section-num">١</div>
+          <i class="bi bi-people-fill" style="color:var(--gold);"></i>
+          بيانات المجموعة
         </div>
-      </div>
-    </div>
-
-    <!-- Section 2: Booking Details -->
-    <div class="form-section">
-      <div class="form-section-header">
-        <div class="section-num">٢</div>
-        <i class="bi bi-calendar-event" style="color:var(--gold);"></i>
-        تفاصيل <%= isStayType(type) ? 'الخلوة' : 'اليوم الروحي' %>
-      </div>
-      <div class="form-section-body">
-        <div class="row g-3">
-          <% if (isStayType(type)) { %>
+        <div class="form-section-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label required-label">اسم المجموعة / المشرفة الرئيسية</label>
+              <input type="text" class="form-control" name="church_name" required
+                value="<%= booking ? booking.church_name : '' %>" placeholder="مثلاً: مجموعة تسبحة الأربعاء">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label required-label">عدد الأفراد</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-people"></i></span>
+                <input type="number" class="form-control" name="num_people_count" id="numPeople" min="1" max="60" required
+                  value="<%= booking ? (booking.num_people||'') : '' %>" placeholder="مثلاً: 5">
+              </div>
+              <small class="text-muted">اكتب العدد وهتظهر خانة لكل فرد بالأسفل</small>
+            </div>
             <div class="col-md-4">
               <label class="form-label required-label">تاريخ البداية</label>
               <input type="date" class="form-control" name="start_date" id="startDate" required
@@ -100,11 +59,11 @@
                 value="<%= booking ? booking.end_date||'' : '' %>">
             </div>
             <div class="col-md-4">
-              <label class="form-label">عدد الأيام <small class="text-muted">(يُحسب تلقائياً)</small></label>
+              <label class="form-label">عدد الأيام <small class="text-muted">(تلقائي)</small></label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-sun"></i></span>
                 <input type="number" class="form-control" name="num_days" id="numDays" min="1"
-                  value="<%= booking ? booking.num_days||'' : '' %>" placeholder="...">
+                  value="<%= booking ? booking.num_days||'' : '' %>">
               </div>
             </div>
             <div class="col-md-6">
@@ -116,69 +75,181 @@
                 <% }) %>
               </select>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">المرحلة العمرية / السن</label>
-              <input type="text" class="form-control" name="age_group"
-                value="<%= booking ? booking.age_group||'' : '' %>" placeholder="إعدادي، خدام، ابتدائي...">
-            </div>
-          <% } else { %>
-            <div class="col-md-4">
-              <label class="form-label required-label">تاريخ اليوم الروحي</label>
-              <input type="date" class="form-control" name="event_date" required
-                value="<%= booking ? booking.event_date||'' : '' %>">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">من الساعة</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-clock"></i></span>
-                <input type="time" class="form-control" name="start_time"
-                  value="<%= booking ? booking.start_time||'' : '' %>">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">إلى الساعة</label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-clock-history"></i></span>
-                <input type="time" class="form-control" name="end_time"
-                  value="<%= booking ? booking.end_time||'' : '' %>">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">نوع الخدمة</label>
-              <input type="text" class="form-control" name="service_type"
-                value="<%= booking ? booking.service_type||'' : '' %>" placeholder="نوع النشاط الروحي">
-            </div>
-          <% } %>
-          <div class="col-md-<%= type==='retreat'?'6':'6' %>">
-            <label class="form-label">الفئة</label>
-            <select class="form-select" name="category">
-              <option value="">اختر الفئة</option>
-              <% ['إعدادي','ابتدائي','خدام','شباب','أمهات','مختلطة'].forEach(cat => { %>
-                <option value="<%= cat %>" <%= booking&&booking.category===cat?'selected':'' %>><%= cat %></option>
-              <% }) %>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">عدد الأفراد</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-people"></i></span>
-              <input type="number" class="form-control" name="num_people" min="0"
-                value="<%= booking ? booking.num_people||'' : '' %>" placeholder="0">
-            </div>
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">المنطقة</label>
-            <input type="text" class="form-control" name="area"
-              value="<%= booking ? booking.area||'' : '' %>" placeholder="الهانوفيل...">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">مشرفة البيت</label>
-            <input type="text" class="form-control" name="house_supervisor"
-              value="<%= booking ? booking.house_supervisor||'' : '' %>">
           </div>
         </div>
       </div>
-    </div>
+
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="section-num">٢</div>
+          <i class="bi bi-person-vcard" style="color:var(--gold);"></i>
+          بيانات الأفراد
+          <span class="badge ms-auto" style="background:var(--gold-light);color:var(--gold-dark);" id="personsCount">0</span>
+        </div>
+        <div class="form-section-body">
+          <div id="personsContainer"></div>
+          <div id="personsEmpty" class="text-center text-muted py-3">
+            <i class="bi bi-arrow-up-circle"></i> اكتب عدد الأفراد بالأعلى لإظهار الخانات
+          </div>
+        </div>
+      </div>
+
+    <% } else { %>
+      <!-- ===================== خلوة جماعية / يوم روحي ===================== -->
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="section-num">١</div>
+          <i class="bi bi-building" style="color:var(--gold);"></i>
+          بيانات الكنيسة
+        </div>
+        <div class="form-section-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label required-label">اسم الكنيسة</label>
+              <input type="text" class="form-control" name="church_name" required
+                value="<%= booking ? booking.church_name : '' %>" placeholder="كنيسة القديس...">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">اسم القطاع</label>
+              <input type="text" class="form-control" name="sector_name"
+                value="<%= booking ? booking.sector_name||'' : '' %>" placeholder="قطاع غرب الاسكندرية...">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">الكاهن المسؤل</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                <input type="text" class="form-control" name="priest_name"
+                  value="<%= booking ? booking.priest_name||'' : '' %>" placeholder="أبونا...">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">تليفون الكاهن</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                <input type="tel" class="form-control" name="priest_phone" dir="ltr"
+                  value="<%= booking ? booking.priest_phone||'' : '' %>" placeholder="01XXXXXXXXX">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label"><%= isStayType(type) ? 'اسم مشرفة الخلوة' : 'اسم المشرف' %></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person-check"></i></span>
+                <input type="text" class="form-control" name="supervisor_name"
+                  value="<%= booking ? booking.supervisor_name||'' : '' %>">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">تليفون المشرف</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-phone"></i></span>
+                <input type="tel" class="form-control" name="supervisor_phone" dir="ltr"
+                  value="<%= booking ? booking.supervisor_phone||'' : '' %>" placeholder="01XXXXXXXXX">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-header">
+          <div class="section-num">٢</div>
+          <i class="bi bi-calendar-event" style="color:var(--gold);"></i>
+          تفاصيل <%= isStayType(type) ? 'الخلوة' : 'اليوم الروحي' %>
+        </div>
+        <div class="form-section-body">
+          <div class="row g-3">
+            <% if (isStayType(type)) { %>
+              <div class="col-md-4">
+                <label class="form-label required-label">تاريخ البداية</label>
+                <input type="date" class="form-control" name="start_date" id="startDate" required
+                  value="<%= booking ? booking.start_date||'' : '' %>">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label required-label">تاريخ النهاية</label>
+                <input type="date" class="form-control" name="end_date" id="endDate" required
+                  value="<%= booking ? booking.end_date||'' : '' %>">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">عدد الأيام <small class="text-muted">(يُحسب تلقائياً)</small></label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-sun"></i></span>
+                  <input type="number" class="form-control" name="num_days" id="numDays" min="1"
+                    value="<%= booking ? booking.num_days||'' : '' %>" placeholder="...">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">الدور المحجوز</label>
+                <select class="form-select" name="floor_number">
+                  <option value="">اختر الدور</option>
+                  <% ['الدور الأول','الدور الثاني','الدور الثالث','كامل البيت'].forEach(f => { %>
+                    <option value="<%= f %>" <%= booking&&booking.floor_number===f?'selected':'' %>><%= f %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">المرحلة العمرية / السن</label>
+                <input type="text" class="form-control" name="age_group"
+                  value="<%= booking ? booking.age_group||'' : '' %>" placeholder="إعدادي، خدام، ابتدائي...">
+              </div>
+            <% } else { %>
+              <div class="col-md-4">
+                <label class="form-label required-label">تاريخ اليوم الروحي</label>
+                <input type="date" class="form-control" name="event_date" required
+                  value="<%= booking ? booking.event_date||'' : '' %>">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">من الساعة</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                  <input type="time" class="form-control" name="start_time"
+                    value="<%= booking ? booking.start_time||'' : '' %>">
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">إلى الساعة</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-clock-history"></i></span>
+                  <input type="time" class="form-control" name="end_time"
+                    value="<%= booking ? booking.end_time||'' : '' %>">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">نوع الخدمة</label>
+                <input type="text" class="form-control" name="service_type"
+                  value="<%= booking ? booking.service_type||'' : '' %>" placeholder="نوع النشاط الروحي">
+              </div>
+            <% } %>
+            <div class="col-md-6">
+              <label class="form-label">الفئة</label>
+              <select class="form-select" name="category">
+                <option value="">اختر الفئة</option>
+                <% ['إعدادي','ابتدائي','خدام','شباب','أمهات','مختلطة'].forEach(cat => { %>
+                  <option value="<%= cat %>" <%= booking&&booking.category===cat?'selected':'' %>><%= cat %></option>
+                <% }) %>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">عدد الأفراد</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-people"></i></span>
+                <input type="number" class="form-control" name="num_people" min="0"
+                  value="<%= booking ? booking.num_people||'' : '' %>" placeholder="0">
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">المنطقة</label>
+              <input type="text" class="form-control" name="area"
+                value="<%= booking ? booking.area||'' : '' %>" placeholder="الهانوفيل...">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">مشرفة البيت</label>
+              <input type="text" class="form-control" name="house_supervisor"
+                value="<%= booking ? booking.house_supervisor||'' : '' %>">
+            </div>
+          </div>
+        </div>
+      </div>
+    <% } %>
 
     <!-- Section 3: Financial -->
     <div class="form-section">
@@ -230,22 +301,19 @@
           <div class="col-md-4">
             <label class="form-label">حالة الحجز</label>
             <select class="form-select" name="status">
-              <option value="confirmed" <%= !booking||booking.status==='confirmed'?'selected':'' %>>
-                ✅ مؤكد
-              </option>
-              <option value="pending" <%= booking&&booking.status==='pending'?'selected':'' %>>
-                ⏳ في الانتظار
-              </option>
-              <option value="cancelled" <%= booking&&booking.status==='cancelled'?'selected':'' %>>
-                ❌ ملغي
-              </option>
+              <option value="confirmed" <%= !booking||booking.status==='confirmed'?'selected':'' %>>✅ مؤكد</option>
+              <option value="pending" <%= booking&&booking.status==='pending'?'selected':'' %>>⏳ في الانتظار</option>
+              <option value="cancelled" <%= booking&&booking.status==='cancelled'?'selected':'' %>>❌ ملغي</option>
             </select>
           </div>
           <div class="col-md-8">
-            <label class="form-label">اسم الموقع (للإقرار)</label>
+            <label class="form-label">اسم الموقِّع على الإقرار</label>
             <input type="text" class="form-control" name="signature_name"
               value="<%= booking ? booking.signature_name||'' : '' %>"
-              placeholder="الاسم الذي سيظهر في الإقرار">
+              placeholder="اسم الشخص المسؤول الذي يوقّع على الإقرار">
+            <small class="text-muted">
+              الاسم اللي هيظهر في نص الإقرار: «أقر أنا <b>[الاسم]</b> بأنني اطلعت على تعليمات البيت ...»
+            </small>
           </div>
           <div class="col-12">
             <label class="form-label">ملاحظات إضافية</label>
@@ -293,5 +361,75 @@ if (s && e && d) {
   e.addEventListener('change', calcDays);
 }
 </script>
+
+<% if (type === 'individual_retreat') { %>
+<script>
+  const existingPersons = <%- JSON.stringify((booking && booking.persons) || []) %>;
+  const numInput = document.getElementById('numPeople');
+  const container = document.getElementById('personsContainer');
+  const emptyMsg = document.getElementById('personsEmpty');
+  const countBadge = document.getElementById('personsCount');
+
+  function esc(v) { return (v == null ? '' : String(v)).replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+  function personCard(i, p) {
+    p = p || {};
+    return `
+    <div class="person-card">
+      <div class="person-card-head"><span class="person-no">${i + 1}</span> فرد رقم ${i + 1}</div>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <label class="form-label required-label mb-1">الاسم</label>
+          <input type="text" class="form-control" name="persons[${i}][name]" required value="${esc(p.name)}" placeholder="اسم الفرد">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label mb-1">تليفون للتواصل</label>
+          <input type="tel" class="form-control" dir="ltr" name="persons[${i}][phone]" value="${esc(p.phone)}" placeholder="01XXXXXXXXX">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label mb-1">الكنيسة</label>
+          <input type="text" class="form-control" name="persons[${i}][church]" value="${esc(p.church)}" placeholder="كنيسة...">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label mb-1">السن / المرحلة</label>
+          <input type="text" class="form-control" name="persons[${i}][age]" value="${esc(p.age)}" placeholder="خدمة، شباب...">
+        </div>
+        <div class="col-12">
+          <label class="form-label required-label mb-1"><i class="bi bi-person-check me-1"></i>المشرفة المسؤولة عن هذا الفرد</label>
+          <input type="text" class="form-control" name="persons[${i}][supervisor]" required value="${esc(p.supervisor)}" placeholder="اسم المشرفة">
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // اجمع القيم المكتوبة حالياً حتى لا تُفقد عند تغيير العدد
+  function collectCurrent() {
+    const cards = container.querySelectorAll('.person-card');
+    return Array.from(cards).map(card => ({
+      name: card.querySelector('[name$="[name]"]')?.value || '',
+      phone: card.querySelector('[name$="[phone]"]')?.value || '',
+      church: card.querySelector('[name$="[church]"]')?.value || '',
+      age: card.querySelector('[name$="[age]"]')?.value || '',
+      supervisor: card.querySelector('[name$="[supervisor]"]')?.value || '',
+    }));
+  }
+
+  function render(n) {
+    n = Math.max(0, Math.min(60, parseInt(n) || 0));
+    const current = collectCurrent();
+    container.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      const data = current[i] || existingPersons[i] || {};
+      container.insertAdjacentHTML('beforeend', personCard(i, data));
+    }
+    emptyMsg.style.display = n === 0 ? '' : 'none';
+    countBadge.textContent = n + ' فرد';
+  }
+
+  numInput.addEventListener('input', () => render(numInput.value));
+  // عند فتح الصفحة: لو تعديل، اعرض عدد الأفراد الموجود
+  render(numInput.value || existingPersons.length || 0);
+</script>
+<% } %>
 </body>
 </html>

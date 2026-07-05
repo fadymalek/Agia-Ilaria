@@ -150,6 +150,26 @@ body {
 }
 .stat-label { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
 
+/* ===== كروت الأفراد (الخلوة الفردية) ===== */
+.person-card {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  background: var(--cream);
+}
+.person-card-head {
+  font-weight: 800; color: var(--gold-dark);
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px; font-size: 0.95rem;
+}
+.person-card-head .person-no {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--gold); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 800; flex-shrink: 0;
+}
+
 /* ===== METRIC CARDS (لوحة الإحصائيات العصرية) ===== */
 .metric-card {
   display: flex; align-items: center; gap: 14px;
