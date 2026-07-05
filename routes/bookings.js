@@ -1,7 +1,7 @@
 const express = require('express');
 const ExcelJS = require('exceljs');
 const { bookings, generateBookingNumber } = require('../db');
-const { VALID_TYPES, cairoToday, bookingDate, bookingWhen, typeInfo } = require('../lib/helpers');
+const { VALID_TYPES, cairoToday, bookingDate, bookingWhen, typeInfo, findConflictIds } = require('../lib/helpers');
 const requireAuth = require('../middleware/requireAuth');
 const router = express.Router();
 
@@ -131,6 +131,9 @@ router.get('/', wrap(async (req, res) => {
   const todayList = list.filter(b => b._when === 'today');
   const pendingList = all.filter(b => b.status === 'pending');
 
+  // تعارض الحجوزات (نفس الدور + تواريخ متداخلة)
+  const conflictIds = findConflictIds(all);
+
   const stats = {
     total: all.length,
     retreat: all.filter(b => b.booking_type === 'retreat').length,
@@ -142,6 +145,7 @@ router.get('/', wrap(async (req, res) => {
   res.render('bookings/index', {
     bookings: list, stats, query: req.query,
     todayCount: todayList.length, pendingCount: pendingList.length,
+    conflictIds, conflictCount: conflictIds.size,
   });
 }));
 
@@ -223,6 +227,14 @@ router.get('/backup', wrap(async (req, res) => {
   res.send(JSON.stringify(payload, null, 2));
 }));
 
+// تنبيه (غير مانع) لو الحجز يتعارض مع حجز آخر في نفس الدور والتواريخ
+async function warnIfConflict(req, id) {
+  const all = await bookings.findAll();
+  if (findConflictIds(all).has(id)) {
+    req.flash('error', '⚠️ تنبيه: فيه تعارض مع حجز آخر في نفس الدور وتواريخ متداخلة — راجع الحجوزات.');
+  }
+}
+
 router.post('/', wrap(async (req, res) => {
   const booking_number = await generateBookingNumber();
   const booking = buildBooking(req.body, {
@@ -230,8 +242,9 @@ router.post('/', wrap(async (req, res) => {
     created_by: req.session.user.id,
     created_at: new Date().toISOString(),
   });
-  await bookings.insert(booking);
+  const saved = await bookings.insert(booking);
   req.flash('success', `تم تسجيل الحجز بنجاح - رقم الحجز: ${booking_number}`);
+  if (saved) await warnIfConflict(req, saved.id);
   res.redirect('/bookings');
 }));
 
@@ -249,8 +262,10 @@ router.get('/:id/edit', wrap(async (req, res) => {
 
 router.put('/:id', wrap(async (req, res) => {
   const updates = buildBooking(req.body);
-  await bookings.update(parseInt(req.params.id), updates);
+  const id = parseInt(req.params.id);
+  await bookings.update(id, updates);
   req.flash('success', 'تم تحديث الحجز بنجاح');
+  await warnIfConflict(req, id);
   res.redirect(`/bookings/${req.params.id}`);
 }));
 

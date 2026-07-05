@@ -25,6 +25,12 @@
       <div class="fw-700">عندك <%= pendingCount %> طلب حجز في انتظار الموافقة — اضغط للمراجعة</div>
     </a>
   <% } %>
+  <% if (typeof conflictCount !== 'undefined' && conflictCount > 0) { %>
+    <div class="alert d-flex align-items-center gap-2 border-0 shadow-sm" style="background:#FDECEA;color:#B71C1C;border-right:5px solid #E53935 !important;">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <div class="fw-700">تنبيه: فيه <%= conflictCount %> حجز عليهم تعارض في الدور وتواريخ متداخلة — راجعهم (معلّمين بشارة «تعارض»).</div>
+    </div>
+  <% } %>
 
   <!-- تذكير النسخة الاحتياطية الأسبوعية -->
   <div id="backupReminder" class="alert d-flex align-items-center gap-2 border-0 shadow-sm" style="display:none;background:#E7F5F4;color:#0B5C58;border-right:5px solid #107C77 !important;">
@@ -250,6 +256,9 @@
                 <span class="badge" style="background:<%= ti.bg %>;color:<%= ti.color %>;">
                   <i class="bi <%= ti.icon %> me-1"></i><%= ti.label %>
                 </span>
+                <% if (typeof conflictIds !== 'undefined' && conflictIds.has(b.id)) { %>
+                  <span class="badge mt-1" style="background:#FDECEA;color:#B71C1C;" title="تعارض في الدور والتواريخ"><i class="bi bi-exclamation-triangle-fill me-1"></i>تعارض</span>
+                <% } %>
               </td>
               <td data-label="التاريخ" style="font-size:0.9rem;">
                 <% if (isStayType(b.booking_type) && b.start_date) { %>
@@ -360,6 +369,9 @@
 
       <div class="bk-meta">
         <span class="badge" style="background:<%= ti.bg %>;color:<%= ti.color %>;"><i class="bi <%= ti.icon %> me-1"></i><%= ti.label %></span>
+        <% if (typeof conflictIds !== 'undefined' && conflictIds.has(b.id)) { %>
+          <span class="badge" style="background:#FDECEA;color:#B71C1C;"><i class="bi bi-exclamation-triangle-fill me-1"></i>تعارض</span>
+        <% } %>
         <% if (b._when === 'today') { %>
           <span class="badge when-today"><i class="bi bi-bell-fill me-1"></i>النهاردة</span>
         <% } else if (b._when === 'past') { %>
