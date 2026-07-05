@@ -1,0 +1,132 @@
+<%- include('../partials/head', { title: 'الإعدادات' }) %>
+<%- include('../partials/navbar') %>
+<!-- تحميل خطوط المعاينة داخل صفحة الإعدادات فقط -->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;500;700&family=Almarai:wght@400;700;800&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
+
+<div class="container py-4 fade-up" style="max-width:860px;">
+  <%- include('../partials/flash') %>
+
+  <div class="page-header">
+    <h1 class="page-title"><i class="bi bi-sliders"></i>إعدادات العرض</h1>
+    <button id="resetBtn" class="btn btn-outline-secondary rounded-pill px-3">
+      <i class="bi bi-arrow-counterclockwise me-1"></i>استعادة الافتراضي
+    </button>
+  </div>
+
+  <div class="alert d-flex align-items-center gap-2 border-0 shadow-sm" style="background:#E7F5F4;color:#0B5C58;border-right:5px solid #107C77 !important;">
+    <i class="bi bi-info-circle-fill fs-5"></i>
+    <div class="fw-700">التغييرات بتتطبّق فوراً وبتتحفظ على المتصفح ده — من غير ما تأثر على أي بيانات.</div>
+  </div>
+
+  <!-- حجم الخط -->
+  <div class="card mb-3">
+    <div class="card-header"><i class="bi bi-fonts me-2"></i>حجم الخط</div>
+    <div class="card-body">
+      <div class="opt-grid" id="scaleGroup">
+        <button class="opt-tile" data-key="scale" data-val="0.9"><span style="font-size:0.95rem;">أ</span><small>صغير</small></button>
+        <button class="opt-tile" data-key="scale" data-val="1"><span style="font-size:1.2rem;">أ</span><small>متوسط</small></button>
+        <button class="opt-tile" data-key="scale" data-val="1.12"><span style="font-size:1.5rem;">أ</span><small>كبير</small></button>
+        <button class="opt-tile" data-key="scale" data-val="1.25"><span style="font-size:1.85rem;">أ</span><small>كبير جداً</small></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- نوع الخط -->
+  <div class="card mb-3">
+    <div class="card-header"><i class="bi bi-type me-2"></i>نوع الخط</div>
+    <div class="card-body">
+      <div class="opt-grid opt-grid-font" id="fontGroup">
+        <button class="opt-tile" data-key="font" data-val="plex" style="font-family:'IBM Plex Sans Arabic';"><span>أبجد هوز</span><small>الافتراضي</small></button>
+        <button class="opt-tile" data-key="font" data-val="cairo" style="font-family:'Cairo';"><span>أبجد هوز</span><small>Cairo</small></button>
+        <button class="opt-tile" data-key="font" data-val="tajawal" style="font-family:'Tajawal';"><span>أبجد هوز</span><small>Tajawal</small></button>
+        <button class="opt-tile" data-key="font" data-val="almarai" style="font-family:'Almarai';"><span>أبجد هوز</span><small>Almarai</small></button>
+        <button class="opt-tile" data-key="font" data-val="amiri" style="font-family:'Amiri';"><span>أبجد هوز</span><small>Amiri (نسخ)</small></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- وضوح إضافي -->
+  <div class="card mb-3">
+    <div class="card-header"><i class="bi bi-eyeglasses me-2"></i>الوضوح</div>
+    <div class="card-body">
+      <div class="form-check form-switch d-flex align-items-center gap-2 ps-0">
+        <input class="form-check-input m-0" type="checkbox" id="contrastToggle" style="width:3rem;height:1.5rem;">
+        <label class="form-check-label fw-700" for="contrastToggle">تباين ووضوح أعلى (نصوص أغمق وأوضح — مناسب للقراءة المريحة)</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- معاينة حية -->
+  <div class="card">
+    <div class="card-header"><i class="bi bi-eye me-2"></i>معاينة</div>
+    <div class="card-body">
+      <h5 class="fw-800 mb-1">بيت القديسة ايلاريا</h5>
+      <p class="text-muted mb-2">نموذج لطريقة ظهور النصوص في النظام — عنوان، وصف، وبيانات الحجز.</p>
+      <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+        <span class="badge" style="background:#D7EFED;color:#107C77;"><i class="bi bi-moon-stars-fill me-1"></i>خلوة جماعية</span>
+        <span class="badge" style="background:#E8F5E9;color:#2E7D32;">مؤكد</span>
+        <span class="booking-num">HR-2026-001</span>
+      </div>
+      <table class="table table-sm mb-0" style="max-width:420px;">
+        <tr><td class="text-muted">الكنيسة</td><td class="fw-700">كنيسة العذراء مريم</td></tr>
+        <tr><td class="text-muted">العدد</td><td class="fw-700">25 فرد</td></tr>
+        <tr><td class="text-muted">المدفوع</td><td class="fw-700 text-success">3,500 ج</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var KEY = 'hilaria_prefs';
+    var DEFAULTS = { scale: '1', font: 'plex', contrast: false };
+    var GF = { cairo: 'Cairo:wght@400;500;600;700', tajawal: 'Tajawal:wght@400;500;700',
+      almarai: 'Almarai:wght@400;700;800', amiri: 'Amiri:wght@400;700' };
+    var FONTS = { plex: "'IBM Plex Sans Arabic'", cairo: "'Cairo'", tajawal: "'Tajawal'", almarai: "'Almarai'", amiri: "'Amiri'" };
+
+    function load() { try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch (e) { return Object.assign({}, DEFAULTS); } }
+    function save(p) { localStorage.setItem(KEY, JSON.stringify(p)); }
+
+    function apply(p) {
+      var root = document.documentElement;
+      root.style.setProperty('--fscale', p.scale);
+      if (p.font && p.font !== 'plex' && FONTS[p.font]) {
+        root.style.setProperty('--font-sans', FONTS[p.font] + ", 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif");
+        if (GF[p.font] && !document.querySelector('link[data-font="' + p.font + '"]')) {
+          var l = document.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('data-font', p.font);
+          l.href = 'https://fonts.googleapis.com/css2?family=' + GF[p.font] + '&display=swap';
+          document.head.appendChild(l);
+        }
+      } else {
+        root.style.removeProperty('--font-sans');
+      }
+      root.classList.toggle('pref-contrast', !!p.contrast);
+    }
+
+    function syncUI(p) {
+      document.querySelectorAll('.opt-tile').forEach(function (t) {
+        t.classList.toggle('active', String(p[t.dataset.key]) === String(t.dataset.val));
+      });
+      document.getElementById('contrastToggle').checked = !!p.contrast;
+    }
+
+    var prefs = load();
+    apply(prefs); syncUI(prefs);
+
+    document.querySelectorAll('.opt-tile').forEach(function (t) {
+      t.addEventListener('click', function () {
+        prefs[t.dataset.key] = t.dataset.val;
+        save(prefs); apply(prefs); syncUI(prefs);
+      });
+    });
+    document.getElementById('contrastToggle').addEventListener('change', function () {
+      prefs.contrast = this.checked; save(prefs); apply(prefs);
+    });
+    document.getElementById('resetBtn').addEventListener('click', function () {
+      prefs = Object.assign({}, DEFAULTS);
+      save(prefs); apply(prefs); syncUI(prefs);
+    });
+  })();
+</script>
+</body>
+</html>

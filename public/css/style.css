@@ -2,6 +2,7 @@
 
 :root {
   --font-sans: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, system-ui, sans-serif;
+  --fscale: 1;               /* معامل حجم الخط (يتحكم فيه من صفحة الإعدادات) */
   --gold: #C4963A;
   --gold-dark: #8B6914;
   --gold-deeper: #5C3D0A;
@@ -26,7 +27,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; font-size: calc(16px * var(--fscale)); }
 
 body {
   font-family: var(--font-sans);
@@ -34,9 +35,14 @@ body {
   color: var(--text);
   direction: rtl;
   min-height: 100vh;
-  font-size: 15px;
+  font-size: calc(15px * var(--fscale));
   letter-spacing: -0.1px;
 }
+
+/* وضع «تباين ووضوح أعلى» — لون أغمق للنصوص وخط أثقل قليلاً */
+html.pref-contrast { --text: #100C06; --text-muted: #514334; }
+html.pref-contrast body { font-weight: 500; }
+html.pref-contrast .text-muted { color: #514334 !important; }
 
 /* ===== SCROLLBAR ===== */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -792,6 +798,27 @@ a:hover .stat-card { transform: translateY(-3px); }
   .fc-theme-standard .fc-col-header-cell { border-inline-start: 2px solid #E7D9BE; }
   .fc .fc-timegrid-axis, .fc .fc-timegrid-slot-label { font-size: 0.66rem; }
   .fc .fc-col-header-cell-cushion { padding: 6px 1px; }
+}
+
+/* ===== الإعدادات: بطاقات الاختيار ===== */
+.opt-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.opt-grid-font { grid-template-columns: repeat(5, 1fr); }
+.opt-tile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: 76px; padding: 10px 6px;
+  background: var(--white); border: 2px solid var(--border); border-radius: 14px;
+  color: var(--text); cursor: pointer; transition: all 0.15s ease; text-align: center;
+}
+.opt-tile span { font-weight: 700; line-height: 1.1; }
+.opt-tile small { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; }
+.opt-tile:hover { border-color: var(--gold); transform: translateY(-2px); }
+.opt-tile.active {
+  border-color: var(--gold); background: var(--gold-light);
+  box-shadow: 0 0 0 3px rgba(196,150,58,0.18);
+}
+.opt-tile.active small { color: var(--gold-dark); }
+@media (max-width: 575px) {
+  .opt-grid, .opt-grid-font { grid-template-columns: repeat(2, 1fr); }
 }
 
 /* ===== التقارير: رسوم بيانية + كروت موبايل ===== */
