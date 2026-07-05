@@ -42,18 +42,27 @@ function compareBookings(a, b) {
 
 router.use(requireAuth);
 
-// الخلوة الفردية: كل فرد له بياناته الخاصة + المشرفة المسؤولة عنه
+// الخلوة الفردية: كل فرد له بياناته الكاملة الخاصة (تختلف من فرد لفرد)
 function parsePersons(data) {
   if (!data.persons) return [];
   const arr = Array.isArray(data.persons) ? data.persons : Object.values(data.persons);
+  const t = v => (v == null ? '' : String(v)).trim() || null;
   return arr
     .filter(p => p && (p.name || '').trim())
     .map(p => ({
       name: (p.name || '').trim(),
-      phone: (p.phone || '').trim() || null,
-      church: (p.church || '').trim() || null,
-      age: (p.age || '').trim() || null,
-      supervisor: (p.supervisor || '').trim() || null,
+      age: t(p.age),
+      floor: t(p.floor),
+      phone: t(p.phone),
+      church: t(p.church),
+      start_date: t(p.start_date),
+      end_date: t(p.end_date),
+      confession_father: t(p.confession_father),
+      confession_father_phone: t(p.confession_father_phone),
+      amount: parseFloat(p.amount) || 0,
+      form_status: t(p.form_status),
+      supervisor: t(p.supervisor),
+      house_supervisor: t(p.house_supervisor),
     }));
 }
 
@@ -94,6 +103,16 @@ function buildBooking(data, extra = {}) {
     const persons = parsePersons(data);
     result.persons = persons;
     result.num_people = persons.length;
+    // المالية للمجموعة = مجموع مبالغ الأفراد
+    const sum = persons.reduce((s, p) => s + (p.amount || 0), 0);
+    result.total_amount = sum;
+    result.paid_amount = sum;
+    result.remaining_amount = 0;
+    // تواريخ الحجز على المستوى العام (لأجل القائمة والتقويم) من مدى تواريخ الأفراد
+    const starts = persons.map(p => p.start_date).filter(Boolean).sort();
+    const ends = persons.map(p => p.end_date || p.start_date).filter(Boolean).sort();
+    result.start_date = starts[0] || null;
+    result.end_date = ends[ends.length - 1] || null;
   }
 
   return { ...result, ...extra };

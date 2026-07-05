@@ -37,7 +37,7 @@
             <div class="col-md-6">
               <label class="form-label required-label">اسم المجموعة / المشرفة الرئيسية</label>
               <input type="text" class="form-control" name="church_name" required
-                value="<%= booking ? booking.church_name : '' %>" placeholder="مثلاً: مجموعة تسبحة الأربعاء">
+                value="<%= booking ? booking.church_name : '' %>" placeholder="مثلاً: مجموعة أ. نانسي">
             </div>
             <div class="col-md-6">
               <label class="form-label required-label">عدد الأفراد</label>
@@ -46,34 +46,7 @@
                 <input type="number" class="form-control" name="num_people_count" id="numPeople" min="1" max="60" required
                   value="<%= booking ? (booking.num_people||'') : '' %>" placeholder="مثلاً: 5">
               </div>
-              <small class="text-muted">اكتب العدد وهتظهر خانة لكل فرد بالأسفل</small>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label required-label">تاريخ البداية</label>
-              <input type="date" class="form-control" name="start_date" id="startDate" required
-                value="<%= booking ? booking.start_date||'' : '' %>">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label required-label">تاريخ النهاية</label>
-              <input type="date" class="form-control" name="end_date" id="endDate" required
-                value="<%= booking ? booking.end_date||'' : '' %>">
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">عدد الأيام <small class="text-muted">(تلقائي)</small></label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-sun"></i></span>
-                <input type="number" class="form-control" name="num_days" id="numDays" min="1"
-                  value="<%= booking ? booking.num_days||'' : '' %>">
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">الدور المحجوز</label>
-              <select class="form-select" name="floor_number">
-                <option value="">اختر الدور</option>
-                <% ['الدور الأول','الدور الثاني','الدور الثالث','كامل البيت'].forEach(f => { %>
-                  <option value="<%= f %>" <%= booking&&booking.floor_number===f?'selected':'' %>><%= f %></option>
-                <% }) %>
-              </select>
+              <small class="text-muted">اكتب العدد وهتظهر خانة كاملة لكل فرد بالأسفل (بيانات كل فرد مختلفة)</small>
             </div>
           </div>
         </div>
@@ -251,7 +224,8 @@
       </div>
     <% } %>
 
-    <!-- Section 3: Financial -->
+    <!-- Section 3: Financial (المجموعة تحسب من مبالغ الأفراد في الخلوة الفردية) -->
+    <% if (type !== 'individual_retreat') { %>
     <div class="form-section">
       <div class="form-section-header">
         <div class="section-num">٣</div>
@@ -288,6 +262,7 @@
         </div>
       </div>
     </div>
+    <% } %>
 
     <!-- Section 4: Extra -->
     <div class="form-section">
@@ -370,33 +345,73 @@ if (s && e && d) {
   const emptyMsg = document.getElementById('personsEmpty');
   const countBadge = document.getElementById('personsCount');
 
+  const FIELDS = ['name','age','floor','phone','church','start_date','end_date','confession_father','confession_father_phone','amount','form_status','supervisor','house_supervisor'];
+  const FLOORS = ['الدور الأول','الدور الثاني','الدور الثالث','كامل البيت'];
+  const FORMS = ['مستلمة','لم تُستلم'];
+
   function esc(v) { return (v == null ? '' : String(v)).replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+  function selOptions(val, list) {
+    return '<option value=""></option>' + list.map(o => `<option value="${esc(o)}" ${o === val ? 'selected' : ''}>${esc(o)}</option>`).join('');
+  }
 
   function personCard(i, p) {
     p = p || {};
+    const n = `persons[${i}]`;
     return `
     <div class="person-card">
       <div class="person-card-head"><span class="person-no">${i + 1}</span> فرد رقم ${i + 1}</div>
       <div class="row g-2">
         <div class="col-md-6">
           <label class="form-label required-label mb-1">الاسم</label>
-          <input type="text" class="form-control" name="persons[${i}][name]" required value="${esc(p.name)}" placeholder="اسم الفرد">
+          <input type="text" class="form-control" name="${n}[name]" required value="${esc(p.name)}" placeholder="اسم الفرد">
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="form-label mb-1">السن</label>
+          <input type="text" class="form-control" name="${n}[age]" value="${esc(p.age)}" placeholder="خدمة...">
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="form-label mb-1">الدور</label>
+          <select class="form-select" name="${n}[floor]">${selOptions(p.floor, FLOORS)}</select>
         </div>
         <div class="col-md-6">
-          <label class="form-label mb-1">تليفون للتواصل</label>
-          <input type="tel" class="form-control" dir="ltr" name="persons[${i}][phone]" value="${esc(p.phone)}" placeholder="01XXXXXXXXX">
+          <label class="form-label mb-1">التليفون</label>
+          <input type="tel" class="form-control" dir="ltr" name="${n}[phone]" value="${esc(p.phone)}" placeholder="01XXXXXXXXX">
         </div>
         <div class="col-md-6">
           <label class="form-label mb-1">الكنيسة</label>
-          <input type="text" class="form-control" name="persons[${i}][church]" value="${esc(p.church)}" placeholder="كنيسة...">
+          <input type="text" class="form-control" name="${n}[church]" value="${esc(p.church)}" placeholder="كنيسة...">
         </div>
         <div class="col-md-6">
-          <label class="form-label mb-1">السن / المرحلة</label>
-          <input type="text" class="form-control" name="persons[${i}][age]" value="${esc(p.age)}" placeholder="خدمة، شباب...">
+          <label class="form-label mb-1">من تاريخ</label>
+          <input type="date" class="form-control" name="${n}[start_date]" value="${esc(p.start_date)}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label mb-1">إلى تاريخ</label>
+          <input type="date" class="form-control" name="${n}[end_date]" value="${esc(p.end_date)}">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label mb-1">أب الاعتراف</label>
+          <input type="text" class="form-control" name="${n}[confession_father]" value="${esc(p.confession_father)}" placeholder="أبونا...">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label mb-1">تليفون أب الاعتراف</label>
+          <input type="tel" class="form-control" dir="ltr" name="${n}[confession_father_phone]" value="${esc(p.confession_father_phone)}" placeholder="01XXXXXXXXX">
+        </div>
+        <div class="col-md-4 col-6">
+          <label class="form-label mb-1">المبلغ (ج.م)</label>
+          <input type="number" step="0.01" min="0" class="form-control" name="${n}[amount]" value="${esc(p.amount)}" placeholder="0">
+        </div>
+        <div class="col-md-4 col-6">
+          <label class="form-label mb-1">الاستمارة</label>
+          <select class="form-select" name="${n}[form_status]">${selOptions(p.form_status, FORMS)}</select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label required-label mb-1"><i class="bi bi-person-check me-1"></i>المشرفة المسؤولة عنه</label>
+          <input type="text" class="form-control" name="${n}[supervisor]" required value="${esc(p.supervisor)}" placeholder="اسم المشرفة">
         </div>
         <div class="col-12">
-          <label class="form-label required-label mb-1"><i class="bi bi-person-check me-1"></i>المشرفة المسؤولة عن هذا الفرد</label>
-          <input type="text" class="form-control" name="persons[${i}][supervisor]" required value="${esc(p.supervisor)}" placeholder="اسم المشرفة">
+          <label class="form-label mb-1"><i class="bi bi-house me-1"></i>المسؤول عن البيت وقتها</label>
+          <input type="text" class="form-control" name="${n}[house_supervisor]" value="${esc(p.house_supervisor)}" placeholder="اسم المسؤول عن البيت">
         </div>
       </div>
     </div>`;
@@ -404,14 +419,11 @@ if (s && e && d) {
 
   // اجمع القيم المكتوبة حالياً حتى لا تُفقد عند تغيير العدد
   function collectCurrent() {
-    const cards = container.querySelectorAll('.person-card');
-    return Array.from(cards).map(card => ({
-      name: card.querySelector('[name$="[name]"]')?.value || '',
-      phone: card.querySelector('[name$="[phone]"]')?.value || '',
-      church: card.querySelector('[name$="[church]"]')?.value || '',
-      age: card.querySelector('[name$="[age]"]')?.value || '',
-      supervisor: card.querySelector('[name$="[supervisor]"]')?.value || '',
-    }));
+    return Array.from(container.querySelectorAll('.person-card')).map(card => {
+      const o = {};
+      FIELDS.forEach(f => { const el = card.querySelector(`[name$="[${f}]"]`); o[f] = el ? el.value : ''; });
+      return o;
+    });
   }
 
   function render(n) {
