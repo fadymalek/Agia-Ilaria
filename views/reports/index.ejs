@@ -1,139 +1,151 @@
-<%- include('../partials/head', { title: 'التقارير' }) %>
+<%- include('../partials/head', { title: 'التقارير والإحصائيات' }) %>
 <%- include('../partials/navbar') %>
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 px-4 fade-up">
   <%- include('../partials/flash') %>
 
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <h4 class="fw-bold mb-0"><i class="bi bi-bar-chart me-2"></i>التقرير الأسبوعي</h4>
+  <div class="page-header">
+    <h1 class="page-title"><i class="bi bi-graph-up-arrow"></i>التقارير والإحصائيات</h1>
     <div class="d-flex gap-2 no-print">
-      <a href="/reports/export?from=<%= from %>&to=<%= to %>" class="btn btn-success">
+      <a href="/reports/export?from=<%= from %>&to=<%= to %>" class="btn btn-success rounded-pill px-3">
         <i class="bi bi-file-earmark-excel me-1"></i>تصدير Excel
       </a>
-      <button onclick="window.print()" class="btn btn-outline-secondary">
-        <i class="bi bi-printer me-1"></i>طباعة التقرير
+      <button onclick="window.print()" class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-printer me-1"></i>طباعة
       </button>
     </div>
   </div>
 
-  <!-- Date Range Filter -->
-  <div class="card border-0 shadow-sm mb-4 no-print">
-    <div class="card-body">
-      <form method="GET" action="/reports" class="row g-2 align-items-end">
-        <div class="col-md-4">
-          <label class="form-label fw-semibold">من تاريخ</label>
-          <input type="date" class="form-control" name="from" value="<%= from %>">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label fw-semibold">إلى تاريخ</label>
-          <input type="date" class="form-control" name="to" value="<%= to %>">
-        </div>
-        <div class="col-md-4">
-          <button type="submit" class="btn btn-gold w-100">
-            <i class="bi bi-search me-1"></i>عرض التقرير
-          </button>
-        </div>
+  <!-- نطاقات جاهزة + نطاق مخصص -->
+  <div class="card filter-card mb-3 no-print">
+    <div class="card-body py-2 px-3 d-flex flex-wrap align-items-center gap-2">
+      <% const presets = [['week','هذا الأسبوع'],['month','هذا الشهر'],['year','هذا العام'],['all','الكل']]; %>
+      <% presets.forEach(([k,lbl]) => { %>
+        <a href="/reports?range=<%= k %>" class="btn btn-sm rounded-pill px-3 <%= (typeof preset!=='undefined' && preset===k && !query.from) ? 'btn-gold text-white' : 'btn-outline-secondary' %>"><%= lbl %></a>
+      <% }) %>
+      <form method="GET" action="/reports" class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+        <input type="date" class="form-control form-control-sm" name="from" value="<%= from %>" style="width:150px;">
+        <span class="text-muted">إلى</span>
+        <input type="date" class="form-control form-control-sm" name="to" value="<%= to %>" style="width:150px;">
+        <button type="submit" class="btn btn-sm btn-gold rounded-pill px-3"><i class="bi bi-funnel me-1"></i>عرض</button>
       </form>
     </div>
   </div>
 
-  <!-- Summary Stats -->
-  <div class="row g-3 mb-4">
-    <div class="col-6 col-md-2">
-      <div class="card border-0 shadow-sm text-center p-3">
-        <div class="fw-bold fs-3 text-primary"><%= totals.count %></div>
-        <div class="small text-muted">إجمالي الحجوزات</div>
+  <div class="text-muted small mb-3"><i class="bi bi-calendar-range me-1"></i>الفترة من <strong><%= from %></strong> إلى <strong><%= to %></strong></div>
+
+  <!-- KPIs -->
+  <div class="row g-3 mb-3">
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="metric-card" style="--mc:#C4963A;--mcbg:#FBEEDD;">
+        <div class="metric-icon"><i class="bi bi-calendar3"></i></div>
+        <div class="metric-body"><div class="metric-num"><%= totals.count %></div><div class="metric-label">إجمالي الحجوزات</div></div>
       </div>
     </div>
-    <div class="col-6 col-md-2">
-      <div class="card border-0 shadow-sm text-center p-3">
-        <div class="fw-bold fs-3"><%= totals.retreat_count %></div>
-        <div class="small text-muted">خلوات</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="metric-card" style="--mc:#107C77;--mcbg:#D7EFED;">
+        <div class="metric-icon"><i class="bi bi-people-fill"></i></div>
+        <div class="metric-body"><div class="metric-num"><%= totals.total_people %></div><div class="metric-label">إجمالي الأفراد</div></div>
       </div>
     </div>
-    <div class="col-6 col-md-2">
-      <div class="card border-0 shadow-sm text-center p-3">
-        <div class="fw-bold fs-3 text-success"><%= totals.spiritual_count %></div>
-        <div class="small text-muted">أيام روحية</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="metric-card" style="--mc:#2E7D32;--mcbg:#E6F4E6;">
+        <div class="metric-icon"><i class="bi bi-cash-stack"></i></div>
+        <div class="metric-body"><div class="metric-num" style="font-size:1.5rem;"><%= totals.paid_amount.toLocaleString() %></div><div class="metric-label">المحصّل (ج)</div></div>
       </div>
     </div>
-    <div class="col-6 col-md-2">
-      <div class="card border-0 shadow-sm text-center p-3">
-        <div class="fw-bold fs-3 text-info"><%= totals.total_people %></div>
-        <div class="small text-muted">إجمالي الأفراد</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="metric-card" style="--mc:#B71C1C;--mcbg:#FDECEA;">
+        <div class="metric-icon"><i class="bi bi-hourglass-bottom"></i></div>
+        <div class="metric-body"><div class="metric-num" style="font-size:1.5rem;"><%= totals.remaining_amount.toLocaleString() %></div><div class="metric-label">المتبقي (ج)</div></div>
       </div>
     </div>
-    <div class="col-6 col-md-2">
-      <div class="card border-0 shadow-sm text-center p-3">
-        <div class="fw-bold fs-4 text-success"><%= totals.paid_amount.toLocaleString() %></div>
-        <div class="small text-muted">المدفوع (ج.م)</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="metric-card" style="--mc:#9A4C6D;--mcbg:#F5E3EB;">
+        <div class="metric-icon"><i class="bi bi-percent"></i></div>
+        <div class="metric-body"><div class="metric-num"><%= analytics.collectionRate %>%</div><div class="metric-label">معدل التحصيل</div></div>
       </div>
     </div>
-    <div class="col-6 col-md-2">
-      <div class="card border-0 shadow-sm text-center p-3">
-        <div class="fw-bold fs-4 text-danger"><%= totals.remaining_amount.toLocaleString() %></div>
-        <div class="small text-muted">المتبقي (ج.م)</div>
+    <div class="col-6 col-md-4 col-lg-2">
+      <div class="metric-card" style="--mc:#D98324;--mcbg:#FBEBD7;">
+        <div class="metric-icon"><i class="bi bi-hourglass-split"></i></div>
+        <div class="metric-body"><div class="metric-num"><%= totals.pending_count %></div><div class="metric-label">طلبات معلّقة</div></div>
       </div>
+    </div>
+  </div>
+
+  <!-- رؤى للإدارة -->
+  <div class="card mb-3" style="background:linear-gradient(135deg,var(--cream),#fff);">
+    <div class="card-body py-3">
+      <div class="d-flex flex-wrap gap-4 gap-md-5">
+        <div><div class="text-muted small fw-700"><i class="bi bi-lightbulb me-1" style="color:var(--gold);"></i>أكثر نوع حجزاً</div><div class="fw-800" style="color:var(--gold-dark);"><%= insights.topType %></div></div>
+        <div><div class="text-muted small fw-700"><i class="bi bi-calendar-heart me-1" style="color:var(--gold);"></i>أكثر شهر ازدحاماً</div><div class="fw-800" style="color:var(--gold-dark);"><%= insights.busiestMonth %></div></div>
+        <div><div class="text-muted small fw-700"><i class="bi bi-building me-1" style="color:var(--gold);"></i>أكثر كنيسة حجزاً</div><div class="fw-800" style="color:var(--gold-dark);"><%= insights.topChurch %></div></div>
+        <div><div class="text-muted small fw-700"><i class="bi bi-people me-1" style="color:var(--gold);"></i>متوسط أفراد الحجز</div><div class="fw-800" style="color:var(--gold-dark);"><%= insights.avgPeople %> فرد</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- الرسوم البيانية -->
+  <div class="row g-3 mb-3">
+    <div class="col-lg-4 col-md-6">
+      <div class="card h-100"><div class="card-header"><i class="bi bi-pie-chart-fill me-2"></i>الحجوزات حسب النوع</div>
+        <div class="card-body"><canvas id="chartType" height="200"></canvas></div></div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+      <div class="card h-100"><div class="card-header"><i class="bi bi-pie-chart me-2"></i>الحجوزات حسب الحالة</div>
+        <div class="card-body"><canvas id="chartStatus" height="200"></canvas></div></div>
+    </div>
+    <div class="col-lg-4 col-md-12">
+      <div class="card h-100"><div class="card-header"><i class="bi bi-building me-2"></i>إشغال الأدوار</div>
+        <div class="card-body"><canvas id="chartFloor" height="200"></canvas></div></div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card h-100"><div class="card-header"><i class="bi bi-bar-chart-line me-2"></i>الحجوزات شهرياً</div>
+        <div class="card-body"><canvas id="chartMonth" height="150"></canvas></div></div>
+    </div>
+    <div class="col-lg-5">
+      <div class="card h-100"><div class="card-header"><i class="bi bi-trophy me-2"></i>أكثر الكنائس حجزاً</div>
+        <div class="card-body"><canvas id="chartChurch" height="150"></canvas></div></div>
     </div>
   </div>
 
   <!-- Report Header for Print -->
   <div class="print-only text-center mb-3">
-    <h5>بيت القديسة ايلاريا - التقرير الأسبوعي</h5>
+    <h5>بيت القديسة ايلاريا - تقرير الحجوزات</h5>
     <p>الفترة من <%= from %> إلى <%= to %></p>
   </div>
 
-  <!-- Bookings Table -->
-  <div class="card border-0 shadow-sm">
-    <div class="card-header fw-bold" style="background: var(--gold-light);">
-      تفاصيل الحجوزات في الفترة من <strong><%= from %></strong> إلى <strong><%= to %></strong>
-    </div>
+  <!-- جدول تفصيلي -->
+  <div class="card">
+    <div class="card-header fw-bold"><i class="bi bi-table me-2"></i>تفاصيل الحجوزات (<%= bookings.length %>)</div>
     <div class="card-body p-0">
       <div class="table-responsive">
         <table class="table table-sm table-hover mb-0 align-middle">
-          <thead style="background: #f8f9fa;">
+          <thead style="background: var(--cream);">
             <tr>
-              <th class="px-3">رقم الحجز</th>
-              <th>اسم الكنيسة</th>
-              <th>النوع</th>
-              <th>التاريخ</th>
-              <th>الكاهن</th>
-              <th>الفئة</th>
-              <th>العدد</th>
-              <th>الإجمالي</th>
-              <th>المدفوع</th>
-              <th>المتبقي</th>
-              <th>الحالة</th>
+              <th class="px-3">رقم الحجز</th><th>اسم الكنيسة</th><th>النوع</th><th>التاريخ</th>
+              <th>الكاهن</th><th>المشرفة</th><th>العدد</th><th>المدفوع</th><th>المتبقي</th><th>الحالة</th>
             </tr>
           </thead>
           <tbody>
             <% if (bookings.length === 0) { %>
-              <tr><td colspan="11" class="text-center text-muted py-4">لا توجد حجوزات في هذه الفترة</td></tr>
+              <tr><td colspan="10" class="text-center text-muted py-4">لا توجد حجوزات في هذه الفترة</td></tr>
             <% } %>
-            <% bookings.forEach(b => { %>
+            <% bookings.forEach(b => { const ti = typeInfo(b.booking_type); %>
               <tr>
                 <td class="px-3 small font-monospace"><%= b.booking_number %></td>
                 <td class="fw-semibold"><%= b.church_name %></td>
-                <td>
-                  <% const ti = typeInfo(b.booking_type); %>
-                  <span class="badge" style="background:<%= ti.bg %>;color:<%= ti.color %>;"><%= ti.label %></span>
-                </td>
+                <td><span class="badge" style="background:<%= ti.bg %>;color:<%= ti.color %>;"><%= ti.label %></span></td>
                 <td class="small">
-                  <% if (isStayType(b.booking_type) && b.start_date) { %>
-                    <%= b.start_date %><br><small class="text-muted">→ <%= b.end_date || '' %></small>
-                  <% } else { %>
-                    <%= b.event_date || '-' %>
-                    <% if (b.start_time) { %><br><small class="text-muted"><%= b.start_time %>-<%= b.end_time || '' %></small><% } %>
-                  <% } %>
+                  <% if (isStayType(b.booking_type) && b.start_date) { %><%= b.start_date %><br><small class="text-muted">→ <%= b.end_date || '' %></small>
+                  <% } else { %><%= b.event_date || '-' %><% } %>
                 </td>
                 <td class="small"><%= b.priest_name || '-' %></td>
-                <td class="small"><%= b.category || '-' %></td>
+                <td class="small"><%= b.supervisor_name || '-' %></td>
                 <td class="text-center"><%= b.num_people || 0 %></td>
-                <td class="small"><%= (b.total_amount || 0).toLocaleString() %></td>
                 <td class="text-success small fw-semibold"><%= (b.paid_amount || 0).toLocaleString() %></td>
-                <td class="<%= (b.remaining_amount || 0) > 0 ? 'text-danger' : 'text-muted' %> small fw-semibold">
-                  <%= (b.remaining_amount || 0).toLocaleString() %>
-                </td>
+                <td class="<%= (b.remaining_amount || 0) > 0 ? 'text-danger' : 'text-muted' %> small fw-semibold"><%= (b.remaining_amount || 0).toLocaleString() %></td>
                 <td>
                   <% if (b.status === 'confirmed') { %><span class="badge bg-success">مؤكد</span>
                   <% } else if (b.status === 'pending') { %><span class="badge bg-warning text-dark">انتظار</span>
@@ -145,7 +157,6 @@
             <tr class="table-active fw-bold">
               <td colspan="6" class="px-3 text-end">الإجمالي:</td>
               <td class="text-center"><%= totals.total_people %></td>
-              <td><%= totals.total_amount.toLocaleString() %></td>
               <td class="text-success"><%= totals.paid_amount.toLocaleString() %></td>
               <td class="text-danger"><%= totals.remaining_amount.toLocaleString() %></td>
               <td></td>
@@ -159,5 +170,37 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  const RPT = {
+    types: { labels: ['خلوة جماعية','خلوة فردية','يوم روحي'], data: [<%= totals.retreat_count %>, <%= totals.individual_count %>, <%= totals.spiritual_count %>], colors: ['#107C77','#9A4C6D','#5E7D2E'] },
+    status: { labels: ['مؤكد','في الانتظار','ملغي'], data: [<%= totals.confirmed_count %>, <%= totals.pending_count %>, <%= totals.cancelled_count %>], colors: ['#2E7D32','#F57F17','#9E9E9E'] },
+    floors: <%- JSON.stringify(analytics.byFloor) %>,
+    months: <%- JSON.stringify(analytics.byMonth) %>,
+    churches: <%- JSON.stringify(analytics.topChurches) %>
+  };
+
+  Chart.defaults.font.family = 'Tajawal, sans-serif';
+  Chart.defaults.plugins.legend.labels.font = { family: 'Tajawal, sans-serif' };
+  const GOLD = '#C4963A';
+
+  function doughnut(id, cfg) {
+    const el = document.getElementById(id); if (!el) return;
+    new Chart(el, { type: 'doughnut', data: { labels: cfg.labels, datasets: [{ data: cfg.data, backgroundColor: cfg.colors, borderWidth: 2, borderColor: '#fff' }] },
+      options: { plugins: { legend: { position: 'bottom' } }, cutout: '58%' } });
+  }
+  function bar(id, labels, data, color, horizontal) {
+    const el = document.getElementById(id); if (!el) return;
+    new Chart(el, { type: 'bar', data: { labels, datasets: [{ data, backgroundColor: color, borderRadius: 6, maxBarThickness: 42 }] },
+      options: { indexAxis: horizontal ? 'y' : 'x', plugins: { legend: { display: false } },
+        scales: { x: { grid: { display: !horizontal } }, y: { grid: { display: horizontal }, beginAtZero: true, ticks: { precision: 0 } } } } });
+  }
+
+  doughnut('chartType', RPT.types);
+  doughnut('chartStatus', RPT.status);
+  bar('chartFloor', RPT.floors.map(f => f.label), RPT.floors.map(f => f.count), '#8B6914', true);
+  bar('chartMonth', RPT.months.map(m => m.label), RPT.months.map(m => m.count), GOLD, false);
+  bar('chartChurch', RPT.churches.map(c => c.name), RPT.churches.map(c => c.count), '#107C77', true);
+</script>
 </body>
 </html>

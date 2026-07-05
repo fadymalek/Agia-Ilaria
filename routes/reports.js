@@ -10,18 +10,31 @@ router.use(requireAuth);
 const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 const STATUS_LABEL = { confirmed: 'مؤكد', pending: 'في الانتظار', cancelled: 'ملغي' };
+const AR_MONTHS = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
 
-// نطاق التاريخ (افتراضياً الأسبوع الحالي) + الحجوزات داخله + الإجماليات
-async function getReport(query) {
+// حساب النطاق حسب المفتاح المختصر (أسبوع/شهر/سنة/الكل)
+function presetRange(preset) {
   const today = new Date();
-  const dayOfWeek = today.getDay();
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - dayOfWeek);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
+  const y = today.getFullYear();
+  const fmt = d => d.toISOString().split('T')[0];
+  if (preset === 'week') {
+    const s = new Date(today); s.setDate(today.getDate() - today.getDay());
+    const e = new Date(s); e.setDate(s.getDate() + 6);
+    return { from: fmt(s), to: fmt(e) };
+  }
+  if (preset === 'month') {
+    return { from: fmt(new Date(y, today.getMonth(), 1)), to: fmt(new Date(y, today.getMonth() + 1, 0)) };
+  }
+  if (preset === 'all') return { from: '2000-01-01', to: '2100-12-31' };
+  return { from: `${y}-01-01`, to: `${y}-12-31` }; // السنة الحالية (الافتراضي)
+}
 
-  const from = query.from || weekStart.toISOString().split('T')[0];
-  const to = query.to || weekEnd.toISOString().split('T')[0];
+// نطاق + الحجوزات داخله + الإجماليات + تحليلات للإدارة
+async function getReport(query) {
+  const preset = query.range || 'year';
+  const pr = presetRange(preset);
+  const from = query.from || pr.from;
+  const to = query.to || pr.to;
 
   const all = await bookings.findAll();
   const list = all.filter(b => {
@@ -43,14 +56,72 @@ async function getReport(query) {
     individual_count: list.filter(b => b.booking_type === 'individual_retreat').length,
     spiritual_count: list.filter(b => b.booking_type === 'spiritual_day').length,
     total_people: list.reduce((s, b) => s + (b.num_people || 0), 0),
+    confirmed_count: list.filter(b => b.status === 'confirmed').length,
+    pending_count: list.filter(b => b.status === 'pending').length,
+    cancelled_count: list.filter(b => b.status === 'cancelled').length,
   };
 
-  return { from, to, list, totals };
+  // ===== تحليلات =====
+  // حسب الشهر
+  const monthMap = {};
+  list.forEach(b => {
+    const d = b.event_date || b.start_date || '';
+    if (!d) return;
+    const key = d.slice(0, 7); // YYYY-MM
+    monthMap[key] = monthMap[key] || { count: 0, people: 0, paid: 0 };
+    monthMap[key].count++;
+    monthMap[key].people += b.num_people || 0;
+    monthMap[key].paid += b.paid_amount || 0;
+  });
+  const byMonth = Object.keys(monthMap).sort().map(k => ({
+    key: k, label: AR_MONTHS[parseInt(k.slice(5, 7), 10) - 1] + ' ' + k.slice(0, 4),
+    count: monthMap[k].count, people: monthMap[k].people, paid: monthMap[k].paid,
+  }));
+
+  // إشغال الأدوار
+  const floorMap = {};
+  const addFloor = f => { const k = f || 'غير محدد'; floorMap[k] = (floorMap[k] || 0) + 1; };
+  list.forEach(b => {
+    if (b.booking_type === 'spiritual_day') return;
+    if (b.booking_type === 'individual_retreat' && Array.isArray(b.persons)) {
+      b.persons.forEach(p => addFloor(p.floor));
+    } else if (b.booking_type === 'retreat') {
+      addFloor(b.floor_number);
+    }
+  });
+  const byFloor = Object.keys(floorMap).map(k => ({ label: k, count: floorMap[k] })).sort((a, b) => b.count - a.count);
+
+  // أكثر الكنائس حجزاً
+  const churchMap = {};
+  list.forEach(b => { const n = (b.church_name || '—').trim(); churchMap[n] = (churchMap[n] || 0) + 1; });
+  const topChurches = Object.keys(churchMap).map(k => ({ name: k, count: churchMap[k] }))
+    .sort((a, b) => b.count - a.count).slice(0, 6);
+
+  const collectionRate = totals.total_amount > 0 ? Math.round((totals.paid_amount / totals.total_amount) * 100) : 0;
+
+  // رؤى نصية للإدارة
+  const typeArr = [
+    { key: 'retreat', label: 'خلوة جماعية', n: totals.retreat_count },
+    { key: 'individual_retreat', label: 'خلوة فردية', n: totals.individual_count },
+    { key: 'spiritual_day', label: 'يوم روحي', n: totals.spiritual_count },
+  ].sort((a, b) => b.n - a.n);
+  const busiestMonth = byMonth.slice().sort((a, b) => b.count - a.count)[0];
+  const insights = {
+    topType: typeArr[0] && typeArr[0].n > 0 ? typeArr[0].label : '—',
+    busiestMonth: busiestMonth ? busiestMonth.label : '—',
+    collectionRate,
+    avgPeople: totals.count ? Math.round(totals.total_people / totals.count) : 0,
+    topChurch: topChurches[0] && topChurches[0].count > 0 ? topChurches[0].name : '—',
+  };
+
+  const analytics = { byMonth, byFloor, topChurches, collectionRate };
+
+  return { from, to, preset, list, totals, analytics, insights };
 }
 
 router.get('/', wrap(async (req, res) => {
-  const { from, to, list, totals } = await getReport(req.query);
-  res.render('reports/index', { bookings: list, totals, from, to });
+  const data = await getReport(req.query);
+  res.render('reports/index', { bookings: data.list, query: req.query, ...data });
 }));
 
 // تصدير التقرير إلى ملف Excel
