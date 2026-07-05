@@ -794,6 +794,35 @@ a:hover .stat-card { transform: translateY(-3px); }
   .fc .fc-col-header-cell-cushion { padding: 6px 1px; }
 }
 
+/* ===== التقارير: رسوم بيانية + كروت موبايل ===== */
+.chart-box { position: relative; height: 240px; width: 100%; }
+.chart-box-wide { height: 260px; }
+
+.preset-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.insights-card .insight-cell { border-inline-start: 3px solid var(--gold-light); padding-inline-start: 10px; }
+
+/* كروت تفاصيل الحجوزات في التقارير (للموبايل) */
+.rpt-card {
+  background: var(--white); border: 1px solid var(--border); border-radius: 14px;
+  padding: 12px 14px; margin-bottom: 10px; box-shadow: var(--shadow-xs);
+}
+.rpt-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.min-w-0 { min-width: 0; }
+.rpt-tags { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.rpt-date { font-size: 0.82rem; color: var(--text-muted); font-weight: 700; }
+.rpt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; margin-top: 10px;
+  padding-top: 10px; border-top: 1px dashed var(--border); }
+.rpt-grid > div { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.rpt-grid label { font-size: 0.68rem; color: var(--text-muted); font-weight: 700; }
+.rpt-grid span { font-size: 0.92rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rpt-total { background: linear-gradient(135deg, var(--cream), #fff); border-color: var(--gold-light); }
+
+@media (max-width: 575px) {
+  .chart-box { height: 220px; }
+  .chart-box-wide { height: 230px; }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 991px) {
   .stat-num { font-size: 2rem; }
