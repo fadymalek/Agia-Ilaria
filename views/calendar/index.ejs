@@ -50,6 +50,9 @@
       };
     }
 
+    // عدد الأحداث الظاهرة قبل ظهور رابط "+N أخرى" — أقل على الموبايل عشان الشكل يفضل مرتب
+    function maxEventsFor(small) { return small ? 2 : 3; }
+
     const calendar = new FullCalendar.Calendar(el, {
       locale: 'ar',
       direction: 'rtl',
@@ -63,7 +66,10 @@
       eventDisplay: 'block',
       displayEventTime: true,
       nowIndicator: true,
-      dayMaxEvents: 4,
+      dayMaxEvents: maxEventsFor(isSmall()),        // يجمع الزيادة في "+N أخرى" بدل التكدس
+      moreLinkText: n => '+' + n + ' أخرى',
+      moreLinkClick: 'popover',                     // يفتح كل حجوزات اليوم في نافذة مرتبة
+      eventOrder: 'start,-duration,title',
       fixedWeekCount: false,
       eventClick: function (info) {
         info.jsEvent.preventDefault();
@@ -88,6 +94,7 @@
       if (isSmall() !== small) {
         small = isSmall();
         calendar.setOption('headerToolbar', toolbarFor(small));
+        calendar.setOption('dayMaxEvents', maxEventsFor(small));
         calendar.updateSize();
       }
       updateScrollClass();

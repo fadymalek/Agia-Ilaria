@@ -728,21 +728,31 @@ a:hover .stat-card { transform: translateY(-3px); }
 .fc .fc-list-sticky .fc-list-day > * { box-shadow: var(--shadow-xs); }
 
 /* مسافة أوسع لخلايا الأيام + تباعد الأحداث */
-.fc .fc-daygrid-day-frame { min-height: 96px; }
-.fc .fc-daygrid-day-events { margin-top: 2px; }
-.fc .fc-daygrid-event-harness { margin-bottom: 3px; }
+.fc .fc-daygrid-day-frame { min-height: 104px; }
+.fc .fc-daygrid-day-events { margin-top: 3px; min-height: 0 !important; }
+.fc .fc-daygrid-event-harness { margin: 0 3px 4px; }
 .fc .fc-daygrid-day-top { padding: 4px 6px 0; }
 
-/* تحسينات عرض الشهر */
+/* تحسينات عرض الشهر — كل حجز يظهر كـ pill مرتّب لا يتعدى حدود الخلية */
 .fc .fc-daygrid-event {
   color: #fff !important;
-  border-radius: 6px;
-  padding: 2px 6px;
+  border-radius: 7px;
+  padding: 2px 7px;
+  min-height: 20px;
+  line-height: 1.35;
+  max-width: 100%;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   box-shadow: 0 1px 2px rgba(0,0,0,0.12);
 }
-.fc .fc-daygrid-event .fc-event-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.fc .fc-daygrid-block-event .fc-event-main { overflow: hidden; }
+.fc .fc-daygrid-event .fc-event-title {
+  font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;
+}
 .fc .fc-daygrid-event .fc-event-time { font-weight: 700; opacity: 0.9; }
+/* رابط "+N أخرى" ونافذة عرض حجوزات اليوم */
+.fc .fc-daygrid-more-link { display: inline-block; margin: 1px 3px; }
+.fc .fc-popover { max-width: 300px; }
+.fc .fc-popover-body .fc-daygrid-event { margin-bottom: 5px; white-space: normal; }
 .fc .fc-daygrid-day:hover { background: rgba(196,150,58,0.05); }
 .fc .fc-day-other { background: #FBF8F2; }
 .fc .fc-day-other .fc-daygrid-day-number { opacity: 0.45; }

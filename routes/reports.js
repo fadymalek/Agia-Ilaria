@@ -124,19 +124,162 @@ router.get('/', wrap(async (req, res) => {
   res.render('reports/index', { bookings: data.list, query: req.query, ...data });
 }));
 
-// تصدير التقرير إلى ملف Excel
+// ===== ثوابت تنسيق Excel =====
+const XL = {
+  gold: 'FF8B6914', goldDark: 'FF5C3D0A', cream: 'FFF7ECD3', creamDeep: 'FFEFD9A8',
+  border: 'FFE3D6B4', zebra: 'FFFBF6EA', white: 'FFFFFFFF',
+  green: 'FF1B5E20', red: 'FFB71C1C', teal: 'FF107C77', wine: 'FF9A4C6D', olive: 'FF5E7D2E',
+  headBg: 'FF107C77',
+};
+const thinAll = c => ({ top: { style: 'thin', color: { argb: c } }, bottom: { style: 'thin', color: { argb: c } }, left: { style: 'thin', color: { argb: c } }, right: { style: 'thin', color: { argb: c } } });
+
+// تصدير التقرير إلى ملف Excel (ورقة ملخص وتحليلات + ورقة تفاصيل)
 router.get('/export', wrap(async (req, res) => {
-  const { from, to, list, totals } = await getReport(req.query);
+  const { from, to, list, totals, analytics, insights } = await getReport(req.query);
+  const collect = analytics.collectionRate;
 
   const wb = new ExcelJS.Workbook();
   wb.creator = 'بيت القديسة ايلاريا';
   wb.created = new Date();
-  const ws = wb.addWorksheet('الحجوزات', { views: [{ rightToLeft: true, state: 'frozen', ySplit: 3 }] });
 
-  // عنوان التقرير
-  ws.mergeCells('A1', 'Q1');
-  ws.getCell('A1').value = `بيت القديسة ايلاريا - تقرير الحجوزات من ${from} إلى ${to}`;
-  ws.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FF5C3D0A' } };
+  // ============ ورقة (1): ملخص وتحليلات ============
+  const s = wb.addWorksheet('ملخص وتحليلات', { views: [{ rightToLeft: true, showGridLines: false }] });
+  s.columns = [{ width: 26 }, { width: 20 }, { width: 4 }, { width: 26 }, { width: 20 }];
+
+  // عنوان رئيسي
+  s.mergeCells('A1:E1');
+  const t1 = s.getCell('A1');
+  t1.value = 'بيت القديسة ايلاريا — تقرير وإحصائيات الحجوزات';
+  t1.font = { bold: true, size: 16, color: { argb: XL.white } };
+  t1.alignment = { horizontal: 'center', vertical: 'middle' };
+  t1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: XL.gold } };
+  s.getRow(1).height = 32;
+  s.mergeCells('A2:E2');
+  const t2 = s.getCell('A2');
+  t2.value = `الفترة من ${from} إلى ${to}`;
+  t2.font = { italic: true, size: 11, color: { argb: XL.goldDark } };
+  t2.alignment = { horizontal: 'center' };
+  s.getRow(2).height = 20;
+
+  let r = 4;
+  // عنوان قسم صغير
+  const section = title => {
+    s.mergeCells(`A${r}:E${r}`);
+    const c = s.getCell(`A${r}`);
+    c.value = title;
+    c.font = { bold: true, size: 12, color: { argb: XL.white } };
+    c.alignment = { horizontal: 'right', vertical: 'middle', indent: 1 };
+    c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: XL.headBg } };
+    s.getRow(r).height = 24;
+    r++;
+  };
+  // بطاقة مؤشر: تسمية | قيمة (تبدأ من عمود col)
+  const kpi = (col, label, value, color) => {
+    const lc = s.getCell(r, col), vc = s.getCell(r, col + 1);
+    lc.value = label; vc.value = value;
+    lc.font = { bold: true, color: { argb: XL.goldDark } };
+    lc.alignment = { horizontal: 'right', indent: 1 };
+    lc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: XL.cream } };
+    vc.font = { bold: true, size: 12, color: { argb: color || XL.goldDark } };
+    vc.alignment = { horizontal: 'center' };
+    vc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: XL.white } };
+    lc.border = thinAll(XL.border); vc.border = thinAll(XL.border);
+    s.getRow(r).height = 20;
+  };
+
+  // --- المؤشرات الرئيسية (شبكة عمودين) ---
+  section('المؤشرات الرئيسية');
+  const kpis = [
+    ['إجمالي الحجوزات', totals.count, XL.goldDark],
+    ['إجمالي الأفراد', totals.total_people, XL.teal],
+    ['المبلغ المحصّل (ج)', totals.paid_amount, XL.green],
+    ['المبلغ المتبقّي (ج)', totals.remaining_amount, XL.red],
+    ['معدل التحصيل', `${collect}%`, collect >= 70 ? XL.green : XL.red],
+    ['طلبات في الانتظار', totals.pending_count, XL.wine],
+  ];
+  for (let i = 0; i < kpis.length; i += 2) {
+    kpi(1, kpis[i][0], kpis[i][1], kpis[i][2]);
+    if (kpis[i + 1]) kpi(4, kpis[i + 1][0], kpis[i + 1][1], kpis[i + 1][2]);
+    r++;
+  }
+  r++;
+
+  // --- رؤى للإدارة ---
+  section('رؤى للإدارة');
+  [
+    ['أكثر نوع حجزاً', insights.topType],
+    ['أكثر شهر ازدحاماً', insights.busiestMonth],
+    ['أكثر كنيسة حجزاً', insights.topChurch],
+    ['متوسط عدد الأفراد للحجز', insights.avgPeople],
+    ['معدل التحصيل العام', `${insights.collectionRate}%`],
+  ].forEach(([label, val]) => {
+    s.mergeCells(`A${r}:B${r}`);
+    const lc = s.getCell(`A${r}`); lc.value = label;
+    lc.font = { bold: true, color: { argb: XL.goldDark } };
+    lc.alignment = { horizontal: 'right', indent: 1 };
+    lc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: XL.cream } };
+    s.mergeCells(`C${r}:E${r}`);
+    const vc = s.getCell(`C${r}`); vc.value = val;
+    vc.font = { color: { argb: XL.goldDark } };
+    vc.alignment = { horizontal: 'right', indent: 1 };
+    lc.border = thinAll(XL.border); vc.border = thinAll(XL.border);
+    r++;
+  });
+  r++;
+
+  // جدول تحليلي صغير: عنوانان + صفوف
+  const miniTable = (title, head, rows) => {
+    section(title);
+    // رأس الجدول
+    const h1 = s.getCell(r, 1), h2 = s.getCell(r, 2);
+    h1.value = head[0]; h2.value = head[1];
+    [h1, h2].forEach(c => {
+      c.font = { bold: true, color: { argb: XL.white } };
+      c.alignment = { horizontal: 'center' };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: XL.gold } };
+      c.border = thinAll(XL.border);
+    });
+    r++;
+    rows.forEach((row, i) => {
+      const lc = s.getCell(r, 1), vc = s.getCell(r, 2);
+      lc.value = row[0]; vc.value = row[1];
+      lc.alignment = { horizontal: 'right', indent: 1 };
+      vc.alignment = { horizontal: 'center' };
+      const bg = i % 2 ? XL.zebra : XL.white;
+      lc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+      vc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+      lc.border = thinAll(XL.border); vc.border = thinAll(XL.border);
+      r++;
+    });
+    r++;
+  };
+
+  miniTable('الحجوزات حسب النوع', ['النوع', 'العدد'], [
+    ['خلوة جماعية', totals.retreat_count],
+    ['خلوة فردية', totals.individual_count],
+    ['يوم روحي', totals.spiritual_count],
+  ]);
+  miniTable('الحجوزات حسب الحالة', ['الحالة', 'العدد'], [
+    ['مؤكد', totals.confirmed_count],
+    ['في الانتظار', totals.pending_count],
+    ['ملغي', totals.cancelled_count],
+  ]);
+  if (analytics.byMonth.length) {
+    miniTable('الحجوزات شهرياً', ['الشهر', 'عدد الحجوزات'], analytics.byMonth.map(m => [m.label, m.count]));
+  }
+  if (analytics.topChurches.length) {
+    miniTable('أكثر الكنائس حجزاً', ['الكنيسة', 'العدد'], analytics.topChurches.map(c => [c.name, c.count]));
+  }
+  if (analytics.byFloor.length) {
+    miniTable('إشغال الأدوار', ['الدور', 'عدد الحجوزات'], analytics.byFloor.map(f => [f.label, f.count]));
+  }
+
+  // ============ ورقة (2): تفاصيل الحجوزات ============
+  const ws = wb.addWorksheet('تفاصيل الحجوزات', { views: [{ rightToLeft: true, state: 'frozen', ySplit: 3 }] });
+
+  ws.mergeCells('A1', 'S1');
+  ws.getCell('A1').value = `تفاصيل الحجوزات — من ${from} إلى ${to}`;
+  ws.getCell('A1').font = { bold: true, size: 14, color: { argb: XL.goldDark } };
   ws.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
   ws.getRow(1).height = 26;
   ws.addRow([]);
@@ -153,8 +296,8 @@ router.get('/export', wrap(async (req, res) => {
     { header: 'إلى الساعة', key: 'end_time', width: 11 },
     { header: 'الكاهن', key: 'priest', width: 18 },
     { header: 'تليفون الكاهن', key: 'priest_phone', width: 15 },
-    { header: 'المشرف', key: 'supervisor', width: 16 },
-    { header: 'تليفون المشرف', key: 'supervisor_phone', width: 15 },
+    { header: 'المشرفة', key: 'supervisor', width: 16 },
+    { header: 'تليفون المشرفة', key: 'supervisor_phone', width: 15 },
     { header: 'العدد', key: 'people', width: 8 },
     { header: 'الإجمالي', key: 'total', width: 12 },
     { header: 'المدفوع', key: 'paid', width: 12 },
@@ -163,19 +306,19 @@ router.get('/export', wrap(async (req, res) => {
     { header: 'ملاحظات', key: 'notes', width: 30 },
   ];
 
-  // صف العناوين في السطر الثالث
   const headerRow = ws.getRow(3);
   columns.forEach((c, i) => { headerRow.getCell(i + 1).value = c.header; });
   ws.columns = columns.map(c => ({ key: c.key, width: c.width }));
-  headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  headerRow.font = { bold: true, color: { argb: XL.white } };
   headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
   headerRow.height = 22;
   headerRow.eachCell(cell => {
-    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF8B6914' } };
-    cell.border = { bottom: { style: 'thin', color: { argb: 'FFCCCCCC' } } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: XL.gold } };
+    cell.border = thinAll(XL.border);
   });
 
-  list.forEach(b => {
+  const statusColor = { confirmed: XL.green, pending: 'FFB26A00', cancelled: 'FF9E9E9E' };
+  list.forEach((b, i) => {
     const row = ws.addRow({
       num: b.booking_number,
       church: b.church_name || '',
@@ -198,6 +341,20 @@ router.get('/export', wrap(async (req, res) => {
       notes: b.notes || '',
     });
     row.alignment = { vertical: 'middle' };
+    row.height = 19;
+    const bg = i % 2 ? XL.zebra : XL.white;
+    row.eachCell(cell => {
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bg } };
+      cell.border = { bottom: { style: 'hair', color: { argb: XL.border } } };
+    });
+    // تلوين خلية الحالة + المتبقي
+    const stCell = row.getCell('status');
+    stCell.font = { bold: true, color: { argb: statusColor[b.status] || XL.goldDark } };
+    stCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    const remCell = row.getCell('remaining');
+    remCell.font = { bold: true, color: { argb: (b.remaining_amount || 0) > 0 ? XL.red : XL.green } };
+    row.getCell('paid').font = { color: { argb: XL.green } };
+    ['num', 'type', 'category', 'people', 'start', 'end'].forEach(k => { row.getCell(k).alignment = { horizontal: 'center', vertical: 'middle' }; });
   });
 
   // صف الإجماليات
@@ -205,15 +362,15 @@ router.get('/export', wrap(async (req, res) => {
     church: 'الإجمالي', people: totals.total_people,
     total: totals.total_amount, paid: totals.paid_amount, remaining: totals.remaining_amount,
   });
-  totalRow.font = { bold: true };
+  totalRow.height = 22;
+  totalRow.font = { bold: true, size: 11 };
   totalRow.eachCell(cell => {
-    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5E6C8' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: XL.creamDeep } };
+    cell.border = { top: { style: 'medium', color: { argb: XL.gold } } };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
   });
 
-  // تنسيق أرقام المبالغ
-  ['total', 'paid', 'remaining'].forEach(key => {
-    ws.getColumn(key).numFmt = '#,##0';
-  });
+  ['total', 'paid', 'remaining'].forEach(key => { ws.getColumn(key).numFmt = '#,##0'; });
 
   res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
   res.setHeader('Content-Disposition', `attachment; filename="hilaria-report-${from}_${to}.xlsx"`);
