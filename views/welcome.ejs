@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بيت القديسة ايلاريا للخلوات الروحية للبنات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body { background: linear-gradient(135deg, #f5e6c8 0%, #e8d5a3 100%); min-height: 100vh; }
+    .welcome-logo { height: 190px; filter: drop-shadow(0 6px 14px rgba(92,61,10,.18)); }
+    .choice-card {
+      display: block; text-decoration: none; color: #fff; border-radius: 18px;
+      padding: 1.6rem 1.25rem; text-align: center; height: 100%;
+      box-shadow: 0 8px 22px rgba(92,61,10,.18); transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .choice-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(92,61,10,.28); color:#fff; }
+    .choice-card .ci { font-size: 2.6rem; display:block; margin-bottom:.5rem; }
+    .choice-card .ct { font-size: 1.35rem; font-weight: 700; }
+    .choice-card .cs { font-size: .9rem; opacity: .92; }
+    .choice-retreat { background: linear-gradient(140deg, #0f8c86 0%, #107C77 100%); }
+    .choice-spiritual { background: linear-gradient(140deg, #6f942f 0%, #5E7D2E 100%); }
+    .intro-card { border:0; border-radius:18px; }
+  </style>
+</head>
+<body>
+
+<div class="container py-5" style="max-width: 760px;">
+
+  <!-- Header -->
+  <div class="text-center mb-4">
+    <img src="/images/logo.png" class="welcome-logo" alt="بيت القديسة ايلاريا" onerror="this.style.display='none'">
+    <div class="small text-muted mt-2">بطريركية الأقباط الأرثوذكس — قطاع غرب الاسكندرية</div>
+    <h4 class="fw-bold mt-2" style="color: var(--gold-dark);">بيت القديسة إيلارية للخلوات الروحية — للبنات</h4>
+    <div class="text-muted">بأبو تلات</div>
+  </div>
+
+  <!-- تعريف بالبيت -->
+  <div class="card intro-card shadow-sm mb-4">
+    <div class="card-body p-4 text-center">
+      <h6 class="fw-bold mb-2" style="color: var(--gold-dark);">
+        <i class="bi bi-stars me-1"></i> أهلاً بيكم في بيت أجيا إيلاريا
+      </h6>
+      <p class="mb-0 text-secondary" style="line-height: 2;">
+        بيت مخصّص <strong>للخلوات الروحية للبنات</strong> — من سنّ الإعدادي حتى الخريجات والخادمات والسيدات،
+        ويقبل كذلك رحلات <strong>اليوم الواحد (اليوم الروحي)</strong> من 8 صباحًا إلى 8 مساءً.
+        البيت للخلوة الروحية والهدوء والصلاة، وليس للمعسكرات الترفيهية.
+        اختاري نوع الحجز المناسب لبدء تسجيل طلبك.
+      </p>
+    </div>
+  </div>
+
+  <!-- الاختيارين -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-md-6">
+      <a href="/forms/retreat" class="choice-card choice-retreat">
+        <i class="bi bi-house-heart ci"></i>
+        <span class="ct">حجز خلوة جماعية</span>
+        <span class="cs d-block mt-1">إقامة لعدة أيام لمجموعة من الكنيسة</span>
+      </a>
+    </div>
+    <div class="col-12 col-md-6">
+      <a href="/forms/spiritual-day" class="choice-card choice-spiritual">
+        <i class="bi bi-sun ci"></i>
+        <span class="ct">حجز يوم روحي</span>
+        <span class="cs d-block mt-1">رحلة اليوم الواحد من 8 ص إلى 8 م</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- التعليمات ونظام البيت -->
+  <%- include('partials/house-info') %>
+
+  <!-- تذييل -->
+  <div class="text-center mt-4">
+    <a href="/login" class="text-muted small text-decoration-none">
+      <i class="bi bi-shield-lock me-1"></i> دخول المشرفين / الإدارة
+    </a>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

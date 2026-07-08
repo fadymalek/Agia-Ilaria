@@ -7,7 +7,7 @@ const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch
 
 router.get('/', (req, res) => {
   if (req.session.user) return res.redirect('/bookings');
-  res.redirect('/login');
+  res.render('welcome');
 });
 
 router.get('/login', (req, res) => {
