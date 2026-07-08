@@ -12,12 +12,12 @@
   <link rel="stylesheet" href="/css/style.css">
   <style>
     /* ===== خلفية متدرّجة متحركة ===== */
+    html, body { max-width: 100%; overflow-x: hidden; }
     body {
       min-height: 100vh;
       background: linear-gradient(-45deg, #f7ecd0, #e8d5a3, #f3e0b0, #efd6a0, #f5e6c8);
       background-size: 400% 400%;
       animation: gradientShift 18s ease infinite;
-      overflow-x: hidden;
       position: relative;
     }
     @keyframes gradientShift {
@@ -25,12 +25,31 @@
       50%  { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
-    /* دوائر زخرفية طايفة في الخلفية */
-    .blob { position: fixed; border-radius: 50%; filter: blur(6px); opacity: .28; z-index: 0; pointer-events: none; }
+
+    /* طبقة الخلفية الزخرفية */
+    .bg-decor { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .bg-glow {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(255,255,255,.55), transparent 38%),
+        radial-gradient(circle at 88% 82%, rgba(201,154,63,.20), transparent 46%);
+    }
+    /* دوائر ناعمة طايفة */
+    .blob { position: absolute; border-radius: 50%; filter: blur(8px); opacity: .26; }
     .blob-1 { width: 260px; height: 260px; background: #d9b56a; top: -80px; inset-inline-start: -60px; animation: float1 14s ease-in-out infinite; }
-    .blob-2 { width: 200px; height: 200px; background: #c99a3f; bottom: -60px; inset-inline-end: -40px; animation: float2 16s ease-in-out infinite; }
+    .blob-2 { width: 210px; height: 210px; background: #c99a3f; bottom: -60px; inset-inline-end: -50px; animation: float2 16s ease-in-out infinite; }
+    .blob-3 { width: 150px; height: 150px; background: #e6c680; top: 35%; inset-inline-end: -30px; opacity: .18; animation: float1 20s ease-in-out infinite; }
+    .blob-4 { width: 120px; height: 120px; background: #cfa955; top: 55%; inset-inline-start: -20px; opacity: .16; animation: float2 22s ease-in-out infinite; }
     @keyframes float1 { 0%,100%{ transform: translate(0,0);} 50%{ transform: translate(30px,40px);} }
     @keyframes float2 { 0%,100%{ transform: translate(0,0);} 50%{ transform: translate(-35px,-30px);} }
+    /* لمعان/رموز طايفة */
+    .spark { position: absolute; color: #b98f33; opacity: .16; animation: drift 18s ease-in-out infinite; }
+    .spark.s1 { top: 14%; inset-inline-start: 10%; font-size: 1.5rem; animation-delay: 0s; }
+    .spark.s2 { top: 26%; inset-inline-end: 12%; font-size: 1.1rem; animation-delay: 2.5s; }
+    .spark.s3 { top: 62%; inset-inline-start: 16%; font-size: 1.3rem; animation-delay: 4s; }
+    .spark.s4 { top: 78%; inset-inline-end: 18%; font-size: 1rem; animation-delay: 1.2s; }
+    .spark.s5 { top: 46%; inset-inline-start: 50%; font-size: .95rem; animation-delay: 3.2s; }
+    @keyframes drift { 0%,100%{ transform: translateY(0) rotate(0); } 50%{ transform: translateY(-26px) rotate(14deg); } }
 
     .content { position: relative; z-index: 1; }
 
@@ -39,16 +58,23 @@
     .reveal.d1 { animation-delay: .05s; }
     .reveal.d2 { animation-delay: .18s; }
     .reveal.d3 { animation-delay: .31s; }
-    .reveal.d4 { animation-delay: .44s; }
     .reveal.d5 { animation-delay: .57s; }
     @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
     .welcome-logo {
-      height: 190px; filter: drop-shadow(0 8px 16px rgba(92,61,10,.22));
+      height: 180px; max-width: 78vw; object-fit: contain;
+      filter: drop-shadow(0 8px 16px rgba(92,61,10,.22));
       animation: logoIn 1s ease .1s both, bob 5s ease-in-out 1.1s infinite;
     }
     @keyframes logoIn { from { opacity:0; transform: scale(.85); } to { opacity:1; transform: scale(1); } }
     @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-8px);} }
+
+    .site-title {
+      color: var(--gold-dark); font-weight: 700; line-height: 1.55;
+      font-size: clamp(1.02rem, 4.4vw, 1.5rem);
+      overflow-wrap: break-word; word-break: break-word; text-wrap: balance;
+    }
+    .site-sub { font-size: clamp(.72rem, 3vw, .875rem); }
 
     /* ===== كروت الاختيار ===== */
     .choice-card {
@@ -57,13 +83,13 @@
       box-shadow: 0 8px 22px rgba(92,61,10,.18); transition: transform .18s ease, box-shadow .18s ease;
     }
     .choice-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 16px 34px rgba(92,61,10,.30); color:#fff; }
+    .choice-card:active { transform: translateY(-2px) scale(.99); }
     .choice-card .ci { font-size: 2.6rem; display:block; margin-bottom:.5rem; transition: transform .25s ease; }
     .choice-card:hover .ci { transform: scale(1.12) rotate(-4deg); }
-    .choice-card .ct { font-size: 1.35rem; font-weight: 700; }
-    .choice-card .cs { font-size: .9rem; opacity: .92; }
+    .choice-card .ct { font-size: clamp(1.15rem, 4.4vw, 1.35rem); font-weight: 700; }
+    .choice-card .cs { font-size: clamp(.82rem, 3.2vw, .9rem); opacity: .92; }
     .choice-retreat { background: linear-gradient(140deg, #12a29b 0%, #107C77 100%); }
     .choice-spiritual { background: linear-gradient(140deg, #7aa233 0%, #5E7D2E 100%); }
-    /* لمعة تمر على الكارت عند المرور */
     .choice-card::before {
       content: ""; position: absolute; top: 0; inset-inline-start: -60%; width: 40%; height: 100%;
       background: linear-gradient(120deg, transparent, rgba(255,255,255,.35), transparent);
@@ -72,35 +98,59 @@
     .choice-card:hover::before { inset-inline-start: 120%; }
 
     .intro-card { border:0; border-radius:18px; }
+    .intro-text { line-height: 2; font-size: clamp(.9rem, 3.4vw, 1rem); }
+
+    /* ===== موبايل ===== */
+    @media (max-width: 575.98px) {
+      .content.py-5 { padding-top: 1.75rem !important; padding-bottom: 1.75rem !important; }
+      .welcome-logo { height: 130px; }
+      .intro-body { padding: 1.1rem !important; }
+      .choice-card { padding: 1.3rem 1rem; }
+      .choice-card .ci { font-size: 2.2rem; }
+      .spark { display: none; }        /* تقليل الزحمة على الشاشات الصغيرة */
+      .blob-3, .blob-4 { display: none; }
+    }
 
     @media (prefers-reduced-motion: reduce) {
       body { animation: none; }
-      .blob, .reveal, .welcome-logo { animation: none !important; opacity: 1; transform: none; }
+      .blob, .spark, .reveal, .welcome-logo { animation: none !important; opacity: 1; transform: none; }
+      .spark { opacity: .12; }
     }
   </style>
 </head>
 <body>
 
-<div class="blob blob-1"></div>
-<div class="blob blob-2"></div>
+<!-- طبقة الخلفية الزخرفية -->
+<div class="bg-glow"></div>
+<div class="bg-decor">
+  <span class="blob blob-1"></span>
+  <span class="blob blob-2"></span>
+  <span class="blob blob-3"></span>
+  <span class="blob blob-4"></span>
+  <i class="bi bi-stars spark s1"></i>
+  <i class="bi bi-brightness-high spark s2"></i>
+  <i class="bi bi-flower1 spark s3"></i>
+  <i class="bi bi-stars spark s4"></i>
+  <i class="bi bi-suit-heart spark s5"></i>
+</div>
 
-<div class="container content py-5" style="max-width: 760px;">
+<div class="container content py-5 px-3" style="max-width: 760px;">
 
   <!-- Header -->
   <div class="text-center mb-4">
     <img src="/images/logo.png" class="welcome-logo" alt="بيت القديسة ايلاريا" onerror="this.style.display='none'">
-    <div class="small text-muted mt-2 reveal d1">بطريركية الأقباط الأرثوذكس — قطاع غرب الاسكندرية</div>
-    <h4 class="fw-bold mt-2 reveal d1" style="color: var(--gold-dark);">بيت القديسة إيلارية للخلوات الروحية — للبنات</h4>
-    <div class="text-muted reveal d2">بأبو تلات</div>
+    <div class="site-sub text-muted mt-2 reveal d1">بطريركية الأقباط الأرثوذكس — قطاع غرب الاسكندرية</div>
+    <h1 class="site-title mt-2 mb-1 px-2 reveal d1">بيت القديسة إيلارية للخلوات الروحية — للبنات</h1>
+    <div class="site-sub text-muted reveal d2">بأبو تلات</div>
   </div>
 
   <!-- تعريف بالبيت -->
   <div class="card intro-card shadow-sm mb-4 reveal d2">
-    <div class="card-body p-4 text-center">
+    <div class="card-body intro-body p-4 text-center">
       <h6 class="fw-bold mb-2" style="color: var(--gold-dark);">
         <i class="bi bi-stars me-1"></i> أهلاً بيكم في بيت أجيا إيلاريا
       </h6>
-      <p class="mb-0 text-secondary" style="line-height: 2;">
+      <p class="mb-0 text-secondary intro-text">
         بيت مخصّص <strong>للخلوات الروحية للبنات</strong> — من سنّ الإعدادي حتى الخريجات والخادمات والسيدات،
         ويقبل كذلك رحلات <strong>اليوم الواحد (اليوم الروحي)</strong> من 8 صباحًا إلى 8 مساءً.
         البيت للخلوة الروحية والهدوء والصلاة، وليس للمعسكرات الترفيهية.
