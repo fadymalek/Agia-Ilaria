@@ -42,6 +42,16 @@ function compareBookings(a, b) {
 
 router.use(requireAuth);
 
+// المستخدم العادي: عرض فقط — يُسمح بقائمة الحجوزات وصفحة تفاصيل حجز فقط.
+// أي إضافة/تعديل/حذف/تصدير/نسخة احتياطية/محذوفات للمسؤول الكامل فقط.
+router.use((req, res, next) => {
+  if (req.session.user && req.session.user.role === 'admin') return next();
+  const viewOnly = req.method === 'GET' && (req.path === '/' || /^\/\d+$/.test(req.path));
+  if (viewOnly) return next();
+  req.flash('error', 'هذه العملية متاحة للمسؤول فقط');
+  return res.redirect('/bookings');
+});
+
 // الخلوة الفردية: كل فرد له بياناته الكاملة الخاصة (تختلف من فرد لفرد)
 function parsePersons(data) {
   if (!data.persons) return [];

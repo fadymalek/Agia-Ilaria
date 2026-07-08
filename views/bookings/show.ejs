@@ -28,7 +28,7 @@
         <i class="bi bi-whatsapp me-1"></i>إرسال واتساب
       </a>
     <% } %>
-    <% if (booking.status === 'pending') { %>
+    <% if (user && user.role === 'admin' && booking.status === 'pending') { %>
       <form action="/bookings/<%= booking.id %>/approve" method="POST" class="m-0">
         <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle me-1"></i>موافقة وتأكيد</button>
       </form>
@@ -36,13 +36,17 @@
         <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-x-circle me-1"></i>رفض</button>
       </form>
     <% } %>
+    <% if (user && user.role === 'admin') { %>
     <a href="/bookings/<%= booking.id %>/edit" class="btn btn-outline-gold btn-sm"><i class="bi bi-pencil me-1"></i>تعديل</a>
+    <% } %>
     <button onclick="window.print()" class="btn btn-outline-secondary btn-sm ms-auto">
       <i class="bi bi-printer me-1"></i>طباعة الإيصال
     </button>
+    <% if (user && user.role === 'admin') { %>
     <form action="/bookings/<%= booking.id %>?_method=DELETE" method="POST" onsubmit="return confirm('هل تريد حذف هذا الحجز؟')">
       <button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i>حذف</button>
     </form>
+    <% } %>
   </div>
 
   <!-- Printable Receipt -->

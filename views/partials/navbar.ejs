@@ -21,6 +21,7 @@
             <i class="bi bi-calendar-check me-1"></i>الحجوزات
           </a>
         </li>
+        <% if (user && user.role === 'admin') { %>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             <i class="bi bi-plus-circle me-1"></i>حجز جديد
@@ -46,6 +47,7 @@
             </li>
           </ul>
         </li>
+        <% } %>
         <li class="nav-item">
           <a class="nav-link" href="/calendar">
             <i class="bi bi-calendar3 me-1"></i>التقويم
