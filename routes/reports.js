@@ -2,10 +2,11 @@ const express = require('express');
 const ExcelJS = require('exceljs');
 const { bookings } = require('../db');
 const { typeInfo } = require('../lib/helpers');
-const requireAuth = require('../middleware/requireAuth');
+const requireAdmin = require('../middleware/requireAdmin');
 const router = express.Router();
 
-router.use(requireAuth);
+// التقارير والإحصائيات للمسؤول الكامل فقط
+router.use(requireAdmin);
 
 const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 

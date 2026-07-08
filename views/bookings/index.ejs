@@ -50,7 +50,8 @@
     </div>
   </div>
 
-  <!-- Stats -->
+  <!-- Stats (للمسؤول الكامل فقط) -->
+  <% if (user && user.role === 'admin') { %>
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-4 col-lg">
       <div class="metric-card" style="--mc:#C4963A;--mcbg:#FBEEDD;">
@@ -106,6 +107,7 @@
       </a>
     </div>
   </div>
+  <% } %>
 
   <!-- Filter -->
   <div class="card filter-card mb-4">
@@ -202,9 +204,11 @@
     <a href="/bookings/trash" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
       <i class="bi bi-trash3 me-1"></i>المحذوفات
     </a>
+    <% if (user && user.role === 'admin') { %>
     <a href="/reports" class="btn btn-sm btn-outline-secondary rounded-pill px-3 ms-auto">
       <i class="bi bi-graph-up-arrow me-1"></i>التقارير والإحصائيات
     </a>
+    <% } %>
   </div>
 
   <!-- Empty state -->
