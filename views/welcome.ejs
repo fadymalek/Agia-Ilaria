@@ -73,40 +73,6 @@
 
     .intro-card { border:0; border-radius:18px; }
 
-    /* ===== بوكس مشاركة الرابط ===== */
-    .share-box {
-      border: 2px dashed var(--gold); border-radius: 18px; background: #fffdf7;
-      box-shadow: 0 6px 18px rgba(196,150,58,.15); position: relative; overflow: hidden;
-    }
-    .share-box::after {
-      content: ""; position: absolute; inset: 0;
-      background: radial-gradient(circle at 100% 0, rgba(196,150,58,.10), transparent 45%);
-      pointer-events: none;
-    }
-    .share-url {
-      direction: ltr; text-align: left; font-size: .92rem; background:#fff;
-      border:1px solid #eadfc4; border-radius: 10px; padding:.55rem .75rem; color:#6b5a2e;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .btn-copy {
-      background: linear-gradient(140deg, #d3a545, var(--gold-dark)); color:#fff; border:0;
-      border-radius: 10px; font-weight: 700; white-space: nowrap; transition: transform .12s ease, filter .12s ease;
-    }
-    .btn-copy:hover { filter: brightness(1.06); color:#fff; }
-    .btn-copy:active { transform: scale(.96); }
-    .btn-copy.copied { background: linear-gradient(140deg, #4caf7d, #2e7d52); }
-    .pulse { animation: pulse .45s ease; }
-    @keyframes pulse { 0%{ transform: scale(1);} 40%{ transform: scale(1.14);} 100%{ transform: scale(1);} }
-
-    /* توست النسخ */
-    .copy-toast {
-      position: fixed; bottom: 24px; inset-inline-start: 50%; transform: translateX(50%) translateY(20px);
-      background: #2e7d52; color:#fff; padding:.6rem 1.1rem; border-radius: 12px; font-weight:600;
-      box-shadow: 0 8px 24px rgba(0,0,0,.2); opacity: 0; pointer-events: none;
-      transition: opacity .3s ease, transform .3s ease; z-index: 50;
-    }
-    .copy-toast.show { opacity: 1; transform: translateX(50%) translateY(0); }
-
     @media (prefers-reduced-motion: reduce) {
       body { animation: none; }
       .blob, .reveal, .welcome-logo { animation: none !important; opacity: 1; transform: none; }
@@ -161,28 +127,6 @@
     </div>
   </div>
 
-  <!-- بوكس مشاركة رابط الحجز -->
-  <div class="share-box p-3 p-md-4 mb-4 reveal d4">
-    <div class="d-flex align-items-center mb-2" style="color: var(--gold-dark);">
-      <i class="bi bi-share-fill me-2 fs-5"></i>
-      <span class="fw-bold">رابط صفحة الحجز — انسخه وابعته للناس</span>
-    </div>
-    <div class="row g-2 align-items-center">
-      <div class="col">
-        <div class="share-url" id="shareUrl">…</div>
-      </div>
-      <div class="col-auto">
-        <button type="button" class="btn btn-copy px-3 py-2" id="copyBtn" onclick="copyLink()">
-          <i class="bi bi-clipboard me-1" id="copyIcon"></i><span id="copyText">نسخ الرابط</span>
-        </button>
-      </div>
-    </div>
-    <div class="small text-muted mt-2">
-      <i class="bi bi-info-circle me-1"></i>
-      اللي هيفتح الرابط ده هيوصل للصفحة دي ويقدر يختار «خلوة جماعية» أو «يوم روحي» ويملأ الاستمارة.
-    </div>
-  </div>
-
   <!-- التعليمات ونظام البيت -->
   <div class="reveal d5">
     <%- include('partials/house-info') %>
@@ -197,52 +141,6 @@
 
 </div>
 
-<div class="copy-toast" id="copyToast"><i class="bi bi-check-circle-fill me-1"></i> تم نسخ الرابط ✅</div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // الرابط اللي هيتشارك = رابط الصفحة الحالية (الجذر) على نفس الدومين
-  var shareLink = window.location.origin + '/';
-  document.getElementById('shareUrl').textContent = shareLink;
-
-  function showToast() {
-    var t = document.getElementById('copyToast');
-    t.classList.add('show');
-    clearTimeout(window.__toastT);
-    window.__toastT = setTimeout(function () { t.classList.remove('show'); }, 2200);
-  }
-
-  function markCopied() {
-    var btn = document.getElementById('copyBtn');
-    var icon = document.getElementById('copyIcon');
-    var txt = document.getElementById('copyText');
-    btn.classList.add('copied', 'pulse');
-    icon.className = 'bi bi-check-lg me-1';
-    txt.textContent = 'تم النسخ';
-    showToast();
-    setTimeout(function () {
-      btn.classList.remove('copied', 'pulse');
-      icon.className = 'bi bi-clipboard me-1';
-      txt.textContent = 'نسخ الرابط';
-    }, 2200);
-  }
-
-  function copyLink() {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(shareLink).then(markCopied).catch(fallbackCopy);
-    } else {
-      fallbackCopy();
-    }
-  }
-
-  function fallbackCopy() {
-    var ta = document.createElement('textarea');
-    ta.value = shareLink;
-    ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); markCopied(); } catch (e) {}
-    document.body.removeChild(ta);
-  }
-</script>
 </body>
 </html>
