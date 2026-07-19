@@ -68,7 +68,16 @@
           </div>
           <div class="col-md-6">
             <label class="form-label required-label">عدد الأفراد</label>
-            <input type="number" class="form-control" name="num_people" min="1" required placeholder="0">
+            <input type="number" class="form-control" name="num_people" id="num_people" min="1" required placeholder="0" oninput="calcEstimate()">
+          </div>
+          <div class="col-md-12">
+            <label class="form-label required-label d-block">القطاع</label>
+            <div class="btn-group w-100" role="group" aria-label="القطاع" style="max-width:360px;">
+              <input type="radio" class="btn-check" name="sector_scope" id="scope_in" value="inside" autocomplete="off">
+              <label class="btn btn-outline-secondary" for="scope_in"><i class="bi bi-geo me-1"></i>داخل القطاع</label>
+              <input type="radio" class="btn-check" name="sector_scope" id="scope_out" value="outside" autocomplete="off">
+              <label class="btn btn-outline-secondary" for="scope_out"><i class="bi bi-geo-alt me-1"></i>خارج القطاع</label>
+            </div>
           </div>
           <div class="col-md-4">
             <label class="form-label required-label">تاريخ اليوم الروحي</label>
@@ -85,20 +94,24 @@
         </div>
 
         <h6 class="fw-bold mb-3 pb-2 border-bottom" style="color: var(--gold-dark);">
-          <i class="bi bi-cash-coin me-2"></i>البيانات المالية
+          <i class="bi bi-cash-coin me-2"></i>التكلفة التقريبية
         </h6>
-        <div class="row g-3 mb-4">
-          <div class="col-md-4">
-            <label class="form-label">إجمالي المبلغ (ج.م)</label>
-            <input type="number" class="form-control" name="total_amount" step="0.01" min="0" id="t" oninput="calcR()">
+        <input type="hidden" name="total_amount" id="totalAmount">
+        <div class="mb-4 p-3 rounded" style="background:#f0fff0; border:1px solid #c8e6c9;">
+          <div id="estHint" class="text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            اختاري <strong>القطاع</strong> و<strong>عدد الأفراد</strong> عشان يظهر السعر التقريبي تلقائياً.
           </div>
-          <div class="col-md-4">
-            <label class="form-label">المبلغ المدفوع (ج.م)</label>
-            <input type="number" class="form-control" name="paid_amount" step="0.01" min="0" id="p" oninput="calcR()">
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">المبلغ المتبقي (ج.م)</label>
-            <input type="number" class="form-control bg-light" id="r" readonly>
+          <div id="estDetails" style="display:none;">
+            <div id="estBreak" class="small text-muted mb-2"></div>
+            <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+              <span class="fw-bold" style="color:var(--gold-dark);">الإجمالي التقريبي</span>
+              <span id="estTotal" class="fw-bold fs-3" style="color:#5E7D2E;">0 ج</span>
+            </div>
+            <div class="small text-muted mt-2">
+              <i class="bi bi-exclamation-circle me-1"></i>
+              الرقم ده <strong>تقريبي</strong> وممكن يزيد أو يقل على حسب عدد الأفراد الفعلي.
+            </div>
           </div>
         </div>
 
@@ -121,11 +134,35 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-function calcR() {
-  const t = parseFloat(document.getElementById('t').value) || 0;
-  const p = parseFloat(document.getElementById('p').value) || 0;
-  document.getElementById('r').value = (t - p).toFixed(2);
+// سعر الفرد لليوم الروحي حسب القطاع
+const SD = { inside: 60, outside: 70 };
+
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n).toLocaleString('en-US');
+
+function scopeVal() {
+  const r = document.querySelector('input[name="sector_scope"]:checked');
+  return r ? r.value : '';
 }
+
+function calcEstimate() {
+  const scope = scopeVal();
+  const people = parseInt($('num_people').value) || 0;
+  const hint = $('estHint'), details = $('estDetails'), hidden = $('totalAmount');
+
+  if (!scope || !people) {
+    hint.style.display = 'block'; details.style.display = 'none'; hidden.value = '';
+    return;
+  }
+  const rate = SD[scope];
+  const total = rate * people;
+  $('estBreak').innerHTML = 'الأفراد: ' + rate + ' × ' + people + ' فرد = <strong>' + fmt(total) + ' ج</strong>';
+  $('estTotal').textContent = fmt(total) + ' ج';
+  hidden.value = total;
+  hint.style.display = 'none'; details.style.display = 'block';
+}
+
+document.querySelectorAll('input[name="sector_scope"]').forEach(r => r.addEventListener('change', calcEstimate));
 </script>
 </body>
 </html>

@@ -68,11 +68,11 @@
           </div>
           <div class="col-md-6">
             <label class="form-label required-label">عدد أفراد الخلوة</label>
-            <input type="number" class="form-control" name="num_people" min="1" required placeholder="0">
+            <input type="number" class="form-control" name="num_people" id="num_people" min="1" required placeholder="0" oninput="calcEstimate()">
           </div>
           <div class="col-md-4">
-            <label class="form-label">عدد أيام الخلوة</label>
-            <input type="number" class="form-control" name="num_days" min="1" id="num_days" placeholder="3">
+            <label class="form-label">عدد الليالي</label>
+            <input type="number" class="form-control bg-light" name="num_days" min="1" id="num_days" placeholder="يُحسب تلقائياً" readonly>
           </div>
           <div class="col-md-4">
             <label class="form-label required-label">من تاريخ</label>
@@ -83,8 +83,8 @@
             <input type="date" class="form-control" name="end_date" id="end_date" required>
           </div>
           <div class="col-md-6">
-            <label class="form-label">الدور المطلوب حجزه</label>
-            <select class="form-select" name="floor_number">
+            <label class="form-label required-label">الدور المطلوب حجزه</label>
+            <select class="form-select" name="floor_number" id="floor_number" onchange="calcEstimate()">
               <option value="">اختر الدور</option>
               <option value="الدور الأول">الدور الأول</option>
               <option value="الدور الثاني">الدور الثاني</option>
@@ -92,23 +92,46 @@
               <option value="كامل البيت">كامل البيت</option>
             </select>
           </div>
+          <div class="col-md-6">
+            <label class="form-label required-label d-block">القطاع</label>
+            <div class="btn-group w-100" role="group" aria-label="القطاع">
+              <input type="radio" class="btn-check" name="sector_scope" id="scope_in" value="inside" autocomplete="off">
+              <label class="btn btn-outline-secondary" for="scope_in"><i class="bi bi-geo me-1"></i>داخل القطاع</label>
+              <input type="radio" class="btn-check" name="sector_scope" id="scope_out" value="outside" autocomplete="off">
+              <label class="btn btn-outline-secondary" for="scope_out"><i class="bi bi-geo-alt me-1"></i>خارج القطاع</label>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="kitchen_included" name="kitchen_included" value="1" onchange="calcEstimate()">
+              <label class="form-check-label" for="kitchen_included">هيتم استخدام المطبخ؟ (بيضاف على السعر لكل ليلة)</label>
+            </div>
+          </div>
         </div>
 
         <h6 class="fw-bold mb-3 pb-2 border-bottom" style="color: var(--gold-dark);">
-          <i class="bi bi-cash-coin me-2"></i>البيانات المالية
+          <i class="bi bi-cash-coin me-2"></i>التكلفة التقريبية
         </h6>
-        <div class="row g-3 mb-4">
-          <div class="col-md-4">
-            <label class="form-label">إجمالي المبلغ (ج.م)</label>
-            <input type="number" class="form-control" name="total_amount" step="0.01" min="0" id="t" oninput="calcR()">
+        <input type="hidden" name="total_amount" id="totalAmount">
+        <div class="mb-4 p-3 rounded" style="background:#fffbf0; border:1px solid #e8d5a3;">
+          <div id="estHint" class="text-muted">
+            <i class="bi bi-info-circle me-1"></i>
+            اختاري <strong>الدور</strong> و<strong>القطاع</strong> و<strong>عدد الأفراد</strong> و<strong>التواريخ</strong> عشان يظهر السعر التقريبي تلقائياً.
           </div>
-          <div class="col-md-4">
-            <label class="form-label">المبلغ المدفوع (ج.م)</label>
-            <input type="number" class="form-control" name="paid_amount" step="0.01" min="0" id="p" oninput="calcR()">
+          <div id="estContact" style="display:none;" class="fw-bold text-center py-2" >
+            <i class="bi bi-telephone me-1" style="color:var(--gold-dark);"></i>
+            <span style="color:var(--gold-dark);">السعر لهذا الاختيار بالتواصل مع إدارة البيت.</span>
           </div>
-          <div class="col-md-4">
-            <label class="form-label">المبلغ المتبقي (ج.م)</label>
-            <input type="number" class="form-control bg-light" id="r" readonly>
+          <div id="estDetails" style="display:none;">
+            <div id="estBreak" class="small text-muted mb-2"></div>
+            <div class="d-flex align-items-center justify-content-between pt-2 border-top">
+              <span class="fw-bold" style="color:var(--gold-dark);">الإجمالي التقريبي</span>
+              <span id="estTotal" class="fw-bold fs-3" style="color:#107C77;">0 ج</span>
+            </div>
+            <div class="small text-muted mt-2">
+              <i class="bi bi-exclamation-circle me-1"></i>
+              الرقم ده <strong>تقريبي</strong> وممكن يزيد أو يقل على حسب عدد الأفراد الفعلي في كل ليلة.
+            </div>
           </div>
         </div>
 
@@ -131,22 +154,68 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-function calcR() {
-  const t = parseFloat(document.getElementById('t').value) || 0;
-  const p = parseFloat(document.getElementById('p').value) || 0;
-  document.getElementById('r').value = (t - p).toFixed(2);
+// أسعار الليلة الواحدة حسب الدور والقطاع
+const PRICING = {
+  'الدور الأول':  { inside: { person: 50,  kitchen: 150 }, outside: { person: 60,  kitchen: 200 } },
+  'الدور الثاني': { inside: { person: 100, kitchen: 150 }, outside: { person: 120, kitchen: 200 } },
+  // الدور الثالث / كامل البيت => السعر بالتواصل
+};
+
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n).toLocaleString('en-US');
+
+function nights() {
+  const s = $('start_date').value, e = $('end_date').value;
+  if (!s || !e) return 0;
+  const d = (new Date(e) - new Date(s)) / 86400000;
+  return d > 0 ? Math.round(d) : 0;
 }
-const s = document.getElementById('start_date');
-const e = document.getElementById('end_date');
-const d = document.getElementById('num_days');
-function calcDays() {
-  if (s.value && e.value) {
-    const diff = (new Date(e.value) - new Date(s.value)) / 86400000;
-    if (diff > 0) d.value = diff;
+function scopeVal() {
+  const r = document.querySelector('input[name="sector_scope"]:checked');
+  return r ? r.value : '';
+}
+
+function calcEstimate() {
+  const n = nights();
+  if (n > 0) $('num_days').value = n;
+
+  const floor = $('floor_number').value;
+  const scope = scopeVal();
+  const people = parseInt($('num_people').value) || 0;
+  const kitchen = $('kitchen_included').checked;
+
+  const hint = $('estHint'), details = $('estDetails'), contact = $('estContact');
+  const hidden = $('totalAmount');
+
+  // الدور الثالث / كامل البيت => بالتواصل
+  if (floor && !PRICING[floor]) {
+    hint.style.display = 'none'; details.style.display = 'none'; contact.style.display = 'block';
+    hidden.value = '';
+    return;
   }
+  contact.style.display = 'none';
+
+  if (!floor || !scope || !people || !n) {
+    hint.style.display = 'block'; details.style.display = 'none'; hidden.value = '';
+    return;
+  }
+
+  const rate = PRICING[floor][scope];
+  const peopleCost = rate.person * people * n;
+  const kitchenCost = kitchen ? rate.kitchen * n : 0;
+  const total = peopleCost + kitchenCost;
+
+  let br = 'الأفراد: ' + rate.person + ' × ' + people + ' فرد × ' + n + ' ليلة = <strong>' + fmt(peopleCost) + ' ج</strong>';
+  if (kitchen) br += '<br>المطبخ: ' + rate.kitchen + ' × ' + n + ' ليلة = <strong>' + fmt(kitchenCost) + ' ج</strong>';
+  $('estBreak').innerHTML = br;
+  $('estTotal').textContent = fmt(total) + ' ج';
+  hidden.value = total;
+
+  hint.style.display = 'none'; details.style.display = 'block';
 }
-s.addEventListener('change', calcDays);
-e.addEventListener('change', calcDays);
+
+['start_date', 'end_date'].forEach(id => $(id).addEventListener('change', calcEstimate));
+document.querySelectorAll('input[name="sector_scope"]').forEach(r => r.addEventListener('change', calcEstimate));
 </script>
 </body>
 </html>

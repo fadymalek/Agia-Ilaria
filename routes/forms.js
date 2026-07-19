@@ -24,7 +24,9 @@ router.post('/retreat', wrap(async (req, res) => {
       supervisor_name: d.supervisor_name || null, supervisor_phone: d.supervisor_phone || null,
       age_group: d.age_group || null, num_people: parseInt(d.num_people) || 0,
       num_days: parseInt(d.num_days) || null, start_date: d.start_date || null, end_date: d.end_date || null,
-      floor_number: d.floor_number || null, total_amount: total, paid_amount: paid, remaining_amount: total - paid,
+      floor_number: d.floor_number || null, sector_scope: d.sector_scope || null,
+      kitchen_included: d.kitchen_included ? true : false,
+      total_amount: total, paid_amount: paid, remaining_amount: total - paid,
       signature_name: d.signature_name || null, created_at: new Date().toISOString(), updated_at: new Date().toISOString()
     });
     res.render('forms/success', { booking_number, type: 'retreat' });
@@ -44,6 +46,7 @@ router.post('/spiritual-day', wrap(async (req, res) => {
       priest_name: d.priest_name || null, priest_phone: d.priest_phone || null,
       supervisor_name: d.supervisor_name || null, supervisor_phone: d.supervisor_phone || null,
       service_type: d.service_type || null, num_people: parseInt(d.num_people) || 0,
+      sector_scope: d.sector_scope || null,
       event_date: d.event_date || null, start_time: d.start_time || null, end_time: d.end_time || null,
       total_amount: total, paid_amount: paid, remaining_amount: total - paid,
       signature_name: d.signature_name || null, created_at: new Date().toISOString(), updated_at: new Date().toISOString()
