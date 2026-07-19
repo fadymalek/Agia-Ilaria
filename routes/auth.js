@@ -5,13 +5,13 @@ const router = express.Router();
 
 const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
+// الصفحة الترحيبية تظهر دائماً (حتى لو مسجّل دخول) — لا تحويل تلقائي للحجوزات
 router.get('/', (req, res) => {
-  if (req.session.user) return res.redirect('/bookings');
   res.render('welcome');
 });
 
 router.get('/login', (req, res) => {
-  if (req.session.user) return res.redirect('/bookings');
+  if (req.session.user) return res.redirect('/');
   res.render('login');
 });
 
@@ -44,7 +44,7 @@ router.post('/login', wrap(async (req, res) => {
     email: user.email, role: user.role || 'user',
     needsPwChange: !user.pw_changed,
   };
-  res.redirect('/bookings');
+  res.redirect('/');
 }));
 
 router.post('/logout', (req, res) => {
