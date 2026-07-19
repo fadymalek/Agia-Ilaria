@@ -241,6 +241,7 @@
               <th>التاريخ</th>
               <th>الكاهن</th>
               <th>المشرفة</th>
+              <th>مشرفة البيت</th>
               <th>الفئة</th>
               <th class="text-center">العدد</th>
               <th>المدفوع</th>
@@ -288,6 +289,7 @@
               </td>
               <td data-label="الكاهن" style="font-size:0.92rem;"><%= b.priest_name || '-' %></td>
               <td data-label="المشرفة" style="font-size:0.92rem;"><%= b.supervisor_name || '-' %></td>
+              <td data-label="مشرفة البيت" style="font-size:0.92rem;"><%= b.house_supervisor || '-' %></td>
               <td data-label="الفئة">
                 <% if (b.category) { %>
                   <span class="badge" style="background:var(--gold-light);color:var(--gold-dark);"><%= b.category %></span>
@@ -405,6 +407,7 @@
         </div>
         <div class="cell"><label>الكاهن</label><span class="val"><%= b.priest_name || '-' %></span></div>
         <div class="cell"><label>المشرفة</label><span class="val"><%= b.supervisor_name || '-' %></span></div>
+        <div class="cell"><label>مشرفة البيت</label><span class="val"><%= b.house_supervisor || '-' %></span></div>
         <div class="cell"><label>الفئة</label><span class="val"><%= b.category || '-' %></span></div>
         <div class="cell"><label>العدد</label><span class="val"><%= b.num_people || 0 %></span></div>
         <div class="cell"><label>المدفوع</label><span class="val" style="color:#1B5E20;"><%= (b.paid_amount||0).toLocaleString() %> ج</span></div>
