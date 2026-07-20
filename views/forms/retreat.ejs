@@ -195,21 +195,24 @@ function calcEstimate() {
 
   const hint = $('estHint'), details = $('estDetails'), contact = $('estContact');
   const hidden = $('totalAmount');
+  const fp = PRICING[floor];
 
-  // الدور الثالث / كامل البيت => بالتواصل
-  if (floor && !PRICING[floor]) {
+  // دور سعره صفر (زي الدور الثالث/كامل البيت لو ماتحطّش سعر) => السعر بالتواصل
+  const unpriced = floor && (!fp ||
+    ((!fp.inside || !(fp.inside.person > 0)) && (!fp.outside || !(fp.outside.person > 0))));
+  if (unpriced) {
     hint.style.display = 'none'; details.style.display = 'none'; contact.style.display = 'block';
     hidden.value = '';
     return;
   }
   contact.style.display = 'none';
 
-  if (!floor || !scope || !people || !n) {
+  if (!floor || !scope || !people || !n || !(fp[scope] && fp[scope].person > 0)) {
     hint.style.display = 'block'; details.style.display = 'none'; hidden.value = '';
     return;
   }
 
-  const rate = PRICING[floor][scope];
+  const rate = fp[scope];
   const peopleCost = rate.person * people * n;
   const kitchenCost = kitchen ? rate.kitchen * n : 0;
   const total = peopleCost + kitchenCost;

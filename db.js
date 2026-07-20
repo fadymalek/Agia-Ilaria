@@ -228,23 +228,50 @@ async function generateBookingNumber() {
 
 // ===== الأسعار (قابلة للتعديل من لوحة الإدارة) =====
 // الدور الثالث و«كامل البيت» غير مُسعّرين (السعر بالتواصل).
+// سعر الفرد/المطبخ = 0 معناه «غير مُسعّر» → الفورم بيقول «السعر بالتواصل»
 const DEFAULT_PRICING = {
   retreat: {
     'الدور الأول':  { inside: { person: 50,  kitchen: 150 }, outside: { person: 60,  kitchen: 200 } },
     'الدور الثاني': { inside: { person: 100, kitchen: 150 }, outside: { person: 120, kitchen: 200 } },
+    'الدور الثالث': { inside: { person: 0, kitchen: 0 }, outside: { person: 0, kitchen: 0 } },
+    'كامل البيت':   { inside: { person: 0, kitchen: 0 }, outside: { person: 0, kitchen: 0 } },
   },
   spiritual_day: { inside: 60, outside: 70 },
 };
 
+const RETREAT_FLOORS = ['الدور الأول', 'الدور الثاني', 'الدور الثالث', 'كامل البيت'];
+
+// يدمج الأسعار المحفوظة فوق الافتراضية — يضمن وجود كل الأدوار حتى لو المحفوظ قديم
+function mergePricing(saved) {
+  const base = JSON.parse(JSON.stringify(DEFAULT_PRICING));
+  if (saved && saved.retreat) {
+    for (const f of RETREAT_FLOORS) {
+      const sf = saved.retreat[f];
+      if (!sf) continue;
+      for (const sc of ['inside', 'outside']) {
+        if (sf[sc]) base.retreat[f][sc] = {
+          person: Number(sf[sc].person) || 0,
+          kitchen: Number(sf[sc].kitchen) || 0,
+        };
+      }
+    }
+  }
+  if (saved && saved.spiritual_day) {
+    base.spiritual_day.inside = Number(saved.spiritual_day.inside) || 0;
+    base.spiritual_day.outside = Number(saved.spiritual_day.outside) || 0;
+  }
+  return base;
+}
+
 const settings = {
-  // يرجّع الأسعار المحفوظة، وإن لم توجد يرجّع الافتراضية (فلا يتغيّر السلوك قبل أول تعديل)
+  // يرجّع الأسعار المحفوظة مدموجة فوق الافتراضية (فلا يتغيّر السلوك قبل أول تعديل)
   async getPricing() {
+    let saved = null;
     try {
       const { rows } = await pool.query(`SELECT data FROM app_settings WHERE key = 'pricing'`);
-      const d = rows[0] && rows[0].data;
-      if (d && d.retreat && d.spiritual_day) return d;
-    } catch (e) { /* الجدول غير جاهز بعد → استخدم الافتراضي */ }
-    return DEFAULT_PRICING;
+      saved = rows[0] && rows[0].data;
+    } catch (e) { /* الجدول غير جاهز بعد → الافتراضي */ }
+    return mergePricing(saved);
   },
   async setPricing(data) {
     await pool.query(

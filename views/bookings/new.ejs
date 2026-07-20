@@ -400,14 +400,20 @@ function calcEstimate() {
   const floor = ($id('floorSel') || {}).value || '';
   const nights = parseInt(($id('numDays') || {}).value) || 0;
   const kitchen = ($id('kitchenInc') || {}).checked;
+  const fp = PRICING[floor];
 
-  if (floor && !PRICING[floor]) {
+  // دور سعره صفر (زي الدور الثالث/كامل البيت لو ماتحطّش سعر) => بالتواصل
+  const unpriced = floor && (!fp ||
+    ((!fp.inside || !(fp.inside.person > 0)) && (!fp.outside || !(fp.outside.person > 0))));
+  if (unpriced) {
     breakEl.innerHTML = ''; applyRow.style.display = 'none'; contact.style.display = 'block';
     _lastEstimate = null; box.style.display = 'block'; return;
   }
-  if (!floor || !scope || !people || !nights) { box.style.display = 'none'; _lastEstimate = null; return; }
+  if (!floor || !scope || !people || !nights || !(fp[scope] && fp[scope].person > 0)) {
+    box.style.display = 'none'; _lastEstimate = null; return;
+  }
 
-  const rate = PRICING[floor][scope];
+  const rate = fp[scope];
   const peopleCost = rate.person * people * nights;
   const kitchenCost = kitchen ? rate.kitchen * nights : 0;
   const total = peopleCost + kitchenCost;

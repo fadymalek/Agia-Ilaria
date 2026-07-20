@@ -19,16 +19,16 @@ router.post('/', wrap(async (req, res) => {
     const n = parseFloat(v);
     return (isNaN(n) || n < 0) ? 0 : n;
   };
+  const floor = k => ({
+    inside:  { person: num(b[k + '_in_person']),  kitchen: num(b[k + '_in_kitchen']) },
+    outside: { person: num(b[k + '_out_person']), kitchen: num(b[k + '_out_kitchen']) },
+  });
   const pricing = {
     retreat: {
-      'الدور الأول': {
-        inside:  { person: num(b.f1_in_person),  kitchen: num(b.f1_in_kitchen) },
-        outside: { person: num(b.f1_out_person), kitchen: num(b.f1_out_kitchen) },
-      },
-      'الدور الثاني': {
-        inside:  { person: num(b.f2_in_person),  kitchen: num(b.f2_in_kitchen) },
-        outside: { person: num(b.f2_out_person), kitchen: num(b.f2_out_kitchen) },
-      },
+      'الدور الأول': floor('f1'),
+      'الدور الثاني': floor('f2'),
+      'الدور الثالث': floor('f3'),
+      'كامل البيت': floor('fh'),
     },
     spiritual_day: { inside: num(b.sd_in), outside: num(b.sd_out) },
   };
