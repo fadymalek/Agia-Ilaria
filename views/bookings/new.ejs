@@ -2,10 +2,15 @@
 <%- include('../partials/navbar') %>
 
 <style>
-  .scope-group .btn { transition: all .15s ease; font-weight: 600; }
+  .scope-group { display: flex; gap: .75rem; }
+  .scope-group .btn {
+    flex: 1; transition: all .15s ease; font-weight: 600;
+    border-radius: 14px; border-width: 1.5px; padding: .55rem .5rem;
+  }
+  .scope-group .btn:hover { border-color: var(--gold); color: var(--gold-dark); }
   .scope-group .btn-check:checked + .btn {
     background: var(--gold-dark); border-color: var(--gold-dark); color: #fff;
-    box-shadow: 0 3px 10px rgba(139,105,20,.25);
+    box-shadow: 0 5px 14px rgba(139,105,20,.28); transform: translateY(-2px);
   }
 </style>
 
@@ -231,13 +236,13 @@
             </div>
             <div class="col-md-6">
               <label class="form-label">القطاع <span class="text-muted small">(للتسعير التلقائي)</span></label>
-              <div class="btn-group scope-group w-100" role="group" aria-label="القطاع">
+              <div class="scope-group" role="group" aria-label="القطاع">
                 <input type="radio" class="btn-check" name="sector_scope" id="scope_in" value="inside" autocomplete="off"
                   <%= booking&&booking.sector_scope==='inside'?'checked':'' %> onchange="calcEstimate()">
-                <label class="btn btn-outline-secondary" for="scope_in"><i class="bi bi-geo me-1"></i>داخل القطاع</label>
+                <label class="btn btn-outline-secondary" for="scope_in"><i class="bi bi-geo-alt-fill me-1"></i>داخل القطاع</label>
                 <input type="radio" class="btn-check" name="sector_scope" id="scope_out" value="outside" autocomplete="off"
                   <%= booking&&booking.sector_scope==='outside'?'checked':'' %> onchange="calcEstimate()">
-                <label class="btn btn-outline-secondary" for="scope_out"><i class="bi bi-geo-alt me-1"></i>خارج القطاع</label>
+                <label class="btn btn-outline-secondary" for="scope_out"><i class="bi bi-pin-map-fill me-1"></i>خارج القطاع</label>
               </div>
             </div>
             <div class="col-md-6">
