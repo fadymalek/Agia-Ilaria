@@ -92,6 +92,8 @@ function buildBooking(data, extra = {}) {
     num_people: parseInt(data.num_people) || 0,
     area: data.area || null,
     house_supervisor: data.house_supervisor || null,
+    sector_scope: data.sector_scope || null,
+    kitchen_included: data.kitchen_included ? true : false,
     start_date: data.start_date || null,
     end_date: data.end_date || null,
     floor_number: data.floor_number || null,

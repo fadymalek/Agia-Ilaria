@@ -1,6 +1,14 @@
 <%- include('../partials/head', { title: booking ? 'تعديل حجز' : 'حجز جديد' }) %>
 <%- include('../partials/navbar') %>
 
+<style>
+  .scope-group .btn { transition: all .15s ease; font-weight: 600; }
+  .scope-group .btn-check:checked + .btn {
+    background: var(--gold-dark); border-color: var(--gold-dark); color: #fff;
+    box-shadow: 0 3px 10px rgba(139,105,20,.25);
+  }
+</style>
+
 <div class="container py-4 fade-up" style="max-width:860px;">
   <%- include('../partials/flash') %>
 
@@ -152,7 +160,7 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label">الدور المحجوز</label>
-                <select class="form-select" name="floor_number">
+                <select class="form-select" name="floor_number" id="floorSel" onchange="calcEstimate()">
                   <option value="">اختر الدور</option>
                   <% ['الدور الأول','الدور الثاني','الدور الثالث','كامل البيت'].forEach(f => { %>
                     <option value="<%= f %>" <%= booking&&booking.floor_number===f?'selected':'' %>><%= f %></option>
@@ -163,6 +171,13 @@
                 <label class="form-label">المرحلة العمرية / السن</label>
                 <input type="text" class="form-control" name="age_group"
                   value="<%= booking ? booking.age_group||'' : '' %>" placeholder="إعدادي، خدام، ابتدائي...">
+              </div>
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" role="switch" id="kitchenInc" name="kitchen_included" value="1"
+                    <%= booking&&booking.kitchen_included?'checked':'' %> onchange="calcEstimate()">
+                  <label class="form-check-label" for="kitchenInc">هيتم استخدام المطبخ؟ <span class="text-muted small">(يُضاف على التكلفة لكل ليلة)</span></label>
+                </div>
               </div>
             <% } else { %>
               <div class="col-md-4">
@@ -205,14 +220,25 @@
               <label class="form-label">عدد الأفراد</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-people"></i></span>
-                <input type="number" class="form-control" name="num_people" min="0"
-                  value="<%= booking ? booking.num_people||'' : '' %>" placeholder="0">
+                <input type="number" class="form-control" name="num_people" id="calcPeople" min="0"
+                  value="<%= booking ? booking.num_people||'' : '' %>" placeholder="0" oninput="calcEstimate()">
               </div>
             </div>
             <div class="col-md-3">
               <label class="form-label">المنطقة</label>
               <input type="text" class="form-control" name="area"
                 value="<%= booking ? booking.area||'' : '' %>" placeholder="الهانوفيل...">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">القطاع <span class="text-muted small">(للتسعير التلقائي)</span></label>
+              <div class="btn-group scope-group w-100" role="group" aria-label="القطاع">
+                <input type="radio" class="btn-check" name="sector_scope" id="scope_in" value="inside" autocomplete="off"
+                  <%= booking&&booking.sector_scope==='inside'?'checked':'' %> onchange="calcEstimate()">
+                <label class="btn btn-outline-secondary" for="scope_in"><i class="bi bi-geo me-1"></i>داخل القطاع</label>
+                <input type="radio" class="btn-check" name="sector_scope" id="scope_out" value="outside" autocomplete="off"
+                  <%= booking&&booking.sector_scope==='outside'?'checked':'' %> onchange="calcEstimate()">
+                <label class="btn btn-outline-secondary" for="scope_out"><i class="bi bi-geo-alt me-1"></i>خارج القطاع</label>
+              </div>
             </div>
             <div class="col-md-6">
               <label class="form-label">مشرفة البيت</label>
@@ -233,6 +259,22 @@
         البيانات المالية
       </div>
       <div class="form-section-body">
+        <!-- حساب تلقائي بالتفاصيل (للمشرف) -->
+        <div id="estBox" class="mb-3 p-3 rounded" style="background:#fffbf0;border:1px dashed var(--gold);display:none;">
+          <div class="d-flex align-items-center gap-2 mb-1" style="color:var(--gold-dark);">
+            <i class="bi bi-calculator"></i><span class="fw-700">الحساب التقريبي التلقائي</span>
+          </div>
+          <div id="estBreak" class="small text-muted"></div>
+          <div id="estContact" class="fw-700" style="display:none;color:var(--gold-dark);">
+            <i class="bi bi-telephone me-1"></i> الدور الثالث / كامل البيت: السعر بالتواصل مع إدارة البيت.
+          </div>
+          <div id="estApplyRow" class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-2 pt-2 border-top" style="display:none;">
+            <span><span class="fw-700" style="color:var(--gold-dark);">الإجمالي التقريبي: </span><span id="estTotal" class="fw-800 fs-5" style="color:#107C77;">0 ج</span></span>
+            <button type="button" class="btn btn-sm btn-gold rounded-pill px-3 fw-700" onclick="applyEstimate()">
+              <i class="bi bi-check2-circle me-1"></i>استخدم الرقم في الإجمالي
+            </button>
+          </div>
+        </div>
         <div class="row g-3">
           <div class="col-md-4">
             <label class="form-label">إجمالي المبلغ (ج.م)</label>
@@ -314,27 +356,91 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+const BTYPE = '<%= type %>';
+const PRICING = {
+  'الدور الأول':  { inside: { person: 50,  kitchen: 150 }, outside: { person: 60,  kitchen: 200 } },
+  'الدور الثاني': { inside: { person: 100, kitchen: 150 }, outside: { person: 120, kitchen: 200 } },
+};
+const SD_RATE = { inside: 60, outside: 70 };
+let _lastEstimate = null;
+const $id = id => document.getElementById(id);
+const nf = n => Number(n).toLocaleString('en-US');
+
 function calcRemaining() {
-  const total = parseFloat(document.getElementById('totalAmt').value) || 0;
-  const paid  = parseFloat(document.getElementById('paidAmt').value) || 0;
-  const rem   = document.getElementById('remainAmt');
+  const total = parseFloat($id('totalAmt').value) || 0;
+  const paid  = parseFloat($id('paidAmt').value) || 0;
+  const rem   = $id('remainAmt');
   rem.value   = (total - paid).toFixed(2);
   rem.style.color = (total - paid) > 0 ? '#B71C1C' : '#2E7D32';
 }
 
-const s = document.getElementById('startDate');
-const e = document.getElementById('endDate');
-const d = document.getElementById('numDays');
+function scopeVal() {
+  const r = document.querySelector('input[name="sector_scope"]:checked');
+  return r ? r.value : '';
+}
+
+function calcEstimate() {
+  const box = $id('estBox'); if (!box) return;
+  const breakEl = $id('estBreak'), contact = $id('estContact'), applyRow = $id('estApplyRow');
+  const scope = scopeVal();
+  const people = parseInt(($id('calcPeople') || {}).value) || 0;
+
+  if (BTYPE === 'spiritual_day') {
+    if (!scope || !people) { box.style.display = 'none'; _lastEstimate = null; return; }
+    const total = SD_RATE[scope] * people;
+    breakEl.innerHTML = 'الأفراد: ' + SD_RATE[scope] + ' × ' + people + ' فرد = <strong>' + nf(total) + ' ج</strong>';
+    contact.style.display = 'none'; applyRow.style.display = 'flex';
+    $id('estTotal').textContent = nf(total) + ' ج'; _lastEstimate = total;
+    box.style.display = 'block'; return;
+  }
+
+  // خلوة جماعية
+  const floor = ($id('floorSel') || {}).value || '';
+  const nights = parseInt(($id('numDays') || {}).value) || 0;
+  const kitchen = ($id('kitchenInc') || {}).checked;
+
+  if (floor && !PRICING[floor]) {
+    breakEl.innerHTML = ''; applyRow.style.display = 'none'; contact.style.display = 'block';
+    _lastEstimate = null; box.style.display = 'block'; return;
+  }
+  if (!floor || !scope || !people || !nights) { box.style.display = 'none'; _lastEstimate = null; return; }
+
+  const rate = PRICING[floor][scope];
+  const peopleCost = rate.person * people * nights;
+  const kitchenCost = kitchen ? rate.kitchen * nights : 0;
+  const total = peopleCost + kitchenCost;
+  let br = 'الأفراد: ' + rate.person + ' × ' + people + ' فرد × ' + nights + ' ليلة = <strong>' + nf(peopleCost) + ' ج</strong>';
+  if (kitchen) br += '<br>المطبخ: ' + rate.kitchen + ' × ' + nights + ' ليلة = <strong>' + nf(kitchenCost) + ' ج</strong>';
+  breakEl.innerHTML = br;
+  contact.style.display = 'none'; applyRow.style.display = 'flex';
+  $id('estTotal').textContent = nf(total) + ' ج'; _lastEstimate = total;
+  box.style.display = 'block';
+}
+
+function applyEstimate() {
+  if (_lastEstimate == null) return;
+  $id('totalAmt').value = _lastEstimate;
+  calcRemaining();
+}
+
+const s = $id('startDate');
+const e = $id('endDate');
+const d = $id('numDays');
 if (s && e && d) {
   function calcDays() {
     if (s.value && e.value) {
       const diff = (new Date(e.value) - new Date(s.value)) / 86400000;
       if (diff > 0) d.value = Math.round(diff);
     }
+    calcEstimate();
   }
   s.addEventListener('change', calcDays);
   e.addEventListener('change', calcDays);
 }
+if (d) d.addEventListener('input', calcEstimate);
+
+// حساب مبدئي عند فتح الصفحة (مفيد في التعديل)
+calcEstimate();
 </script>
 
 <% if (type === 'individual_retreat') { %>
