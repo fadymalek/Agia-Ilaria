@@ -83,6 +83,15 @@ async function init() {
   // سلة المحذوفات: عمود حذف ناعم للحجوزات — لا يُمسح الحجز فعلياً
   await pool.query(`ALTER TABLE bookings ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ`);
 
+  // جدول إعدادات عامة (منها الأسعار) — إضافة آمنة لا تمس البيانات القديمة
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key        TEXT PRIMARY KEY,
+      data       JSONB NOT NULL DEFAULT '{}'::jsonb,
+      updated_at TIMESTAMPTZ DEFAULT now()
+    );
+  `);
+
   // إنشاء مستخدم المسؤول الافتراضي إن لم يكن موجوداً
   const { rows } = await pool.query(`SELECT 1 FROM users WHERE username = 'admin'`);
   if (rows.length === 0) {
@@ -217,4 +226,33 @@ async function generateBookingNumber() {
   return `HL-${String(seq).padStart(4, '0')}-${new Date().getFullYear()}`;
 }
 
-module.exports = { pool, init, users, bookings, generateBookingNumber };
+// ===== الأسعار (قابلة للتعديل من لوحة الإدارة) =====
+// الدور الثالث و«كامل البيت» غير مُسعّرين (السعر بالتواصل).
+const DEFAULT_PRICING = {
+  retreat: {
+    'الدور الأول':  { inside: { person: 50,  kitchen: 150 }, outside: { person: 60,  kitchen: 200 } },
+    'الدور الثاني': { inside: { person: 100, kitchen: 150 }, outside: { person: 120, kitchen: 200 } },
+  },
+  spiritual_day: { inside: 60, outside: 70 },
+};
+
+const settings = {
+  // يرجّع الأسعار المحفوظة، وإن لم توجد يرجّع الافتراضية (فلا يتغيّر السلوك قبل أول تعديل)
+  async getPricing() {
+    try {
+      const { rows } = await pool.query(`SELECT data FROM app_settings WHERE key = 'pricing'`);
+      const d = rows[0] && rows[0].data;
+      if (d && d.retreat && d.spiritual_day) return d;
+    } catch (e) { /* الجدول غير جاهز بعد → استخدم الافتراضي */ }
+    return DEFAULT_PRICING;
+  },
+  async setPricing(data) {
+    await pool.query(
+      `INSERT INTO app_settings (key, data, updated_at) VALUES ('pricing', $1, now())
+       ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, updated_at = now()`,
+      [data]
+    );
+  },
+};
+
+module.exports = { pool, init, users, bookings, settings, generateBookingNumber, DEFAULT_PRICING };

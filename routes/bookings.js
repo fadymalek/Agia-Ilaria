@@ -1,6 +1,6 @@
 const express = require('express');
 const ExcelJS = require('exceljs');
-const { bookings, generateBookingNumber } = require('../db');
+const { bookings, generateBookingNumber, settings } = require('../db');
 const { VALID_TYPES, cairoToday, bookingDate, bookingWhen, typeInfo } = require('../lib/helpers');
 const requireAuth = require('../middleware/requireAuth');
 const router = express.Router();
@@ -157,13 +157,14 @@ router.get('/', wrap(async (req, res) => {
   });
 }));
 
-router.get('/new', (req, res) => {
+router.get('/new', wrap(async (req, res) => {
   const type = req.query.type;
   if (!type || !VALID_TYPES.includes(type)) {
     return res.render('bookings/select-type');
   }
-  res.render('bookings/new', { type, booking: null });
-});
+  const pricing = await settings.getPricing();
+  res.render('bookings/new', { type, booking: null, pricing });
+}));
 
 // تصدير قائمة الحجوزات (مع نفس الفلاتر) إلى Excel
 router.get('/export', wrap(async (req, res) => {
@@ -256,7 +257,8 @@ router.get('/:id', wrap(async (req, res) => {
 router.get('/:id/edit', wrap(async (req, res) => {
   const booking = await bookings.findById(parseInt(req.params.id));
   if (!booking) { req.flash('error', 'الحجز غير موجود'); return res.redirect('/bookings'); }
-  res.render('bookings/new', { type: booking.booking_type, booking });
+  const pricing = await settings.getPricing();
+  res.render('bookings/new', { type: booking.booking_type, booking, pricing });
 }));
 
 router.put('/:id', wrap(async (req, res) => {

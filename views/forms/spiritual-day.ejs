@@ -147,8 +147,8 @@
 </div>
 
 <script>
-// سعر الفرد لليوم الروحي حسب القطاع
-const SD = { inside: 60, outside: 70 };
+// سعر الفرد لليوم الروحي (يُدار من لوحة الإدارة)
+const SD = <%- JSON.stringify(pricing.spiritual_day) %>;
 
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n).toLocaleString('en-US');

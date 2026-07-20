@@ -1,11 +1,17 @@
 const express = require('express');
-const { bookings, generateBookingNumber } = require('../db');
+const { bookings, generateBookingNumber, settings } = require('../db');
 const router = express.Router();
 
 const wrap = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
-router.get('/retreat', (req, res) => res.render('forms/retreat', { error: null }));
-router.get('/spiritual-day', (req, res) => res.render('forms/spiritual-day', { error: null }));
+router.get('/retreat', wrap(async (req, res) => {
+  const pricing = await settings.getPricing();
+  res.render('forms/retreat', { error: null, pricing });
+}));
+router.get('/spiritual-day', wrap(async (req, res) => {
+  const pricing = await settings.getPricing();
+  res.render('forms/spiritual-day', { error: null, pricing });
+}));
 
 // الخلوة الفردية تُسجَّل من المشرفين داخل النظام (وليست فورماً عاماً)
 router.get('/individual', (req, res) => res.redirect('/bookings/new?type=individual_retreat'));
@@ -30,7 +36,10 @@ router.post('/retreat', wrap(async (req, res) => {
       signature_name: d.signature_name || null, created_at: new Date().toISOString(), updated_at: new Date().toISOString()
     });
     res.render('forms/success', { booking_number, type: 'retreat' });
-  } catch (e) { res.render('forms/retreat', { error: e.message }); }
+  } catch (e) {
+    const pricing = await settings.getPricing();
+    res.render('forms/retreat', { error: e.message, pricing });
+  }
 }));
 
 router.post('/spiritual-day', wrap(async (req, res) => {
@@ -52,7 +61,10 @@ router.post('/spiritual-day', wrap(async (req, res) => {
       signature_name: d.signature_name || null, created_at: new Date().toISOString(), updated_at: new Date().toISOString()
     });
     res.render('forms/success', { booking_number, type: 'spiritual_day' });
-  } catch (e) { res.render('forms/spiritual-day', { error: e.message }); }
+  } catch (e) {
+    const pricing = await settings.getPricing();
+    res.render('forms/spiritual-day', { error: e.message, pricing });
+  }
 }));
 
 module.exports = router;

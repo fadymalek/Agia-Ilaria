@@ -167,12 +167,8 @@
 </div>
 
 <script>
-// أسعار الليلة الواحدة حسب الدور والقطاع
-const PRICING = {
-  'الدور الأول':  { inside: { person: 50,  kitchen: 150 }, outside: { person: 60,  kitchen: 200 } },
-  'الدور الثاني': { inside: { person: 100, kitchen: 150 }, outside: { person: 120, kitchen: 200 } },
-  // الدور الثالث / كامل البيت => السعر بالتواصل
-};
+// أسعار الليلة الواحدة (تُدار من لوحة الإدارة). الدور الثالث/كامل البيت => بالتواصل
+const PRICING = <%- JSON.stringify(pricing.retreat) %>;
 
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n).toLocaleString('en-US');

@@ -362,11 +362,8 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const BTYPE = '<%= type %>';
-const PRICING = {
-  'الدور الأول':  { inside: { person: 50,  kitchen: 150 }, outside: { person: 60,  kitchen: 200 } },
-  'الدور الثاني': { inside: { person: 100, kitchen: 150 }, outside: { person: 120, kitchen: 200 } },
-};
-const SD_RATE = { inside: 60, outside: 70 };
+const PRICING = <%- JSON.stringify(pricing.retreat) %>;
+const SD_RATE = <%- JSON.stringify(pricing.spiritual_day) %>;
 let _lastEstimate = null;
 const $id = id => document.getElementById(id);
 const nf = n => Number(n).toLocaleString('en-US');
