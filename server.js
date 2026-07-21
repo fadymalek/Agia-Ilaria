@@ -4,17 +4,27 @@ const express = require('express');
 const cookieSession = require('cookie-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
+const helmet = require('helmet');
 const path = require('path');
 
 const db = require('./db');
 const helpers = require('./lib/helpers');
 
+// تحذير أمني: في الإنتاج لازم SESSION_SECRET يكون متظبطاً (وإلا الجلسات قابلة للتزوير)
+if (process.env.NODE_ENV === 'production' && !process.env.SESSION_SECRET) {
+  console.error('\n[أمان] تحذير: SESSION_SECRET غير مضبوط في الإنتاج! اضبطه في متغيّرات البيئة على Vercel فوراً.\n');
+}
+
 const app = express();
+
+// رؤوس حماية (منع clickjacking و MIME sniffing … إلخ). CSP معطّل لتفادي كسر السكربتات/الـ CDN.
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 
 // helpers متاحة لكل القوالب (EJS)
 app.locals.typeInfo = helpers.typeInfo;
 app.locals.isStayType = helpers.isStayType;
 app.locals.waLink = helpers.waLink;
+app.locals.safeJson = helpers.safeJson;
 
 // خلف بروكسي (Vercel / Render) لكي تعمل الكوكيز الآمنة بشكل صحيح
 app.set('trust proxy', 1);

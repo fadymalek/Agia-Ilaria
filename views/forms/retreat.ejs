@@ -168,7 +168,7 @@
 
 <script>
 // أسعار الليلة الواحدة (تُدار من لوحة الإدارة). الدور الثالث/كامل البيت => بالتواصل
-const PRICING = <%- JSON.stringify(pricing.retreat) %>;
+const PRICING = <%- safeJson(pricing.retreat) %>;
 
 const $ = id => document.getElementById(id);
 const fmt = n => Number(n).toLocaleString('en-US');

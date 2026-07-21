@@ -232,9 +232,9 @@
   const RPT = {
     types: { labels: ['خلوة جماعية','خلوة فردية','يوم روحي'], data: [<%= totals.retreat_count %>, <%= totals.individual_count %>, <%= totals.spiritual_count %>], colors: ['#107C77','#9A4C6D','#5E7D2E'] },
     status: { labels: ['مؤكد','في الانتظار','ملغي'], data: [<%= totals.confirmed_count %>, <%= totals.pending_count %>, <%= totals.cancelled_count %>], colors: ['#2E7D32','#F57F17','#9E9E9E'] },
-    floors: <%- JSON.stringify(analytics.byFloor) %>,
-    months: <%- JSON.stringify(analytics.byMonth) %>,
-    churches: <%- JSON.stringify(analytics.topChurches) %>
+    floors: <%- safeJson(analytics.byFloor) %>,
+    months: <%- safeJson(analytics.byMonth) %>,
+    churches: <%- safeJson(analytics.topChurches) %>
   };
 
   Chart.defaults.font.family = 'Tajawal, sans-serif';
